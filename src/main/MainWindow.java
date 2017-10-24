@@ -20,7 +20,7 @@ public class MainWindow {
 	public static int[] deck = {101,101,102,102,103,103,104,105,201,201,202,202,203,204,205};
 	public static boolean deckIsReady = true;
 	
-	public void loadMainPanel() {
+	public boolean loadMainPanel() {
 		
 		JPanel mainPanel = new JPanel(new GridBagLayout());
 		JLabel nickname = new JLabel(myNickname);
@@ -83,6 +83,7 @@ public class MainWindow {
 		mainwindow.removeAll();
 		mainwindow.add(mainPanel);
 		mainwindow.pack();
+		return mainwindow.isShowing();
 	}
 	
 	public final static ArrayList<Friend> friends = new ArrayList<Friend>();
