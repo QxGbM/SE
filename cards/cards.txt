@@ -1,0 +1,110 @@
+farm
+A basic building, that provides a decent amount of summoning points and victory progress.
+Takes 1 turn to finish. Each turn: Summoning Points +2, Victory Progress +4.
+101
+0
+4
+1 spGen 2
+1 buildUnf 1
+0 false
+1 vpGen 4
+monument
+An economical building, that generates a lot of victory progress, but low on summoning points.
+Takes 1 turn to finish. Each turn: Summoning Points +1, Victory Progress +10.
+102
+0
+3
+1 spGen 1
+1 buildUnf 1
+0 false
+1 vpGen 10
+sunwell
+A functional building, can use 1 mana to recover all friendly monsters' mp by 2 and hp by 1.
+Takes 2 turns to finish. Each turn: Summoning Points +2, Victory Progress +2.
+103
+5
+4
+1 spGen 2
+1 buildUnf 2
+2 false damage self 1 0 heal all 2 1
+1 vpGen 2
+castle
+A defensive building, can deal 2 damage to an enemy unit.
+Takes 2 turns to finish. Each turn: Summoning Points +3, Victory Progress +5.
+104
+0
+6
+1 spGen 3
+1 buildUnf 2
+1 true Enemy damage single 0 2
+1 vpGen 5
+summoning circle
+A functional building, can use 3 mana to summon a dragon that costs 0 sp.
+Takes 3 turns to finish. Each turn: Victory Progress +8, Mana +1.
+105
+3
+5
+0
+1 buildUnf 3
+2 true AllyEmpty damage self 3 0 summon 206
+2 vpGen 8 heal self 1 0
+footman
+A defensive monster, can use 1 mana to reduce all incoming damage down to 1 in the next turn
+Consumes 1 sp to summon and in each turn.
+201
+3
+3
+0
+1 spCost 1
+2 false damage self 1 0 shield 1
+0
+archer
+A attacking monster, can deal 1 damage to an enemy unit.
+Consumes 1 sp to summon and in each turn.
+202
+0
+2
+0
+1 spCost 1
+1 true Enemy damage single 0 1
+0
+healer
+A functional monster, can use 2 mana to recover all friendly monsters' hp by 2
+Consumes 2 sp to summon and in each turn. Recovers 1 mana at the end of each turn.
+203
+4
+4
+0
+1 spCost 2
+2 false damage self 2 0 heal all 0 2
+1 heal self 1 0
+wizard
+A powerful attacking monster, can use 2 mana to damage an enemy unit and the unit behind it by 4.
+Consumes 3 sp to summon and in each turn. Recovers 1 mana at the end of each turn.
+204
+4
+3
+0
+1 spCost 3
+2 true Enemy damage self 2 0 damage column 0 4
+1 heal self 1 0
+dragon
+The strongest monster in this world, can use 3 mana to damage all attackable enemy units by 3.
+Consumes 4 sp to summon and in each turn. Recovers 1 mana at the end of each turn.
+205
+6
+6
+0
+1 spCost 4
+2 false damage self 3 0 damage all 0 3
+1 heal self 1 0
+dragon
+The strongest monster in this world, can use 3 mana to damage all attackable enemy units by 3.
+The summoned dragon does not consume any SP. Recovers 1 mana at the end of each turn.
+206
+6
+6
+0
+0
+2 false damage self 3 0 damage all 0 3
+1 heal self 1 0
