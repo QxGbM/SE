@@ -196,14 +196,14 @@ public final class Card{
 		}
 	}
 	
-	public boolean summonSPCheck() {
-		String[] s = atSummon.split(" ");
-		if(!s[0].equals("0") && s[1].equals("spCost")) {
-			int cost = Integer.valueOf(s[2]);
-			if (!Match.endTurn && cost > Match.SP) 
-			{Match.reject("Not enough sp"); return false;}
-		}
-		return true;
+	public boolean summonSPCheck() {//just let you know, if the card  is empty, it will return true in this case.		
+			String[] s = atSummon.split(" ");					
+			if(!s[0].equals("0") && s[1].equals("spCost")) {
+				int cost = Integer.valueOf(s[2]);
+				if (!Match.endTurn && cost > Match.SP) 
+				{Match.reject("Not enough sp"); return false;}
+			}
+			return true;
 	}
 	
 	public void summonCheck() {
@@ -241,7 +241,7 @@ public final class Card{
 		if (skillUsed) {Match.reject("Skill used"); return false;}
 		String[] s = skillActivate.split(" ");
 		int n = Integer.valueOf(s[0]);
-		if (n == 0) {Match.reject("No skill can be activated"); return false;}
+		if (n == 0) {Match.reject("No skill can be activated"); return false;}//this line is being tested
 		boolean skillRequiresTarget = Boolean.valueOf(s[1]);
 		if (!skillRequiresTarget) {
 			Match.logDisplay.append("Activate Skill\n");
