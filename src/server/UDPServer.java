@@ -59,9 +59,9 @@ public final class UDPServer {
 		}
 		
 		public void putAction(int id, String action) {
-			if (id == player1)
+			if (id == player2)
 				ActionBuffer1.add(action);
-			else if (id == player2)
+			else if (id == player1)
 				ActionBuffer2.add(action);
 		}
 		

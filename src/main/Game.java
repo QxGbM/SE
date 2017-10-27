@@ -10,8 +10,8 @@ public final class Game {
 	public static Display display = new Display();
 	
 	public final static UDPClient client = new UDPClient();
-	public final static String ServerIP = "eecslinab1.engineering.cwru.edu";
-	public final static int Port = 50010;
+	public final static String ServerIP = "localhost";
+	public final static int Port = 10010;
 	
 	public static boolean Loggedin = false;
 	public static int myID = -1;
@@ -23,7 +23,6 @@ public final class Game {
 		try {
 			client.send("3 login " + username + " " + password, ServerIP, Port);
 			String response = client.get();
-			System.out.println(response);
 			int n = Integer.valueOf(response.split(" ", 2)[0]);
 			String[] args = response.split(" ", n + 1);
 			if (args[1].equals("login") && args[2].equals("successful")) {
@@ -211,6 +210,7 @@ public final class Game {
 		new MessageRetriever().start();
 		
 		MainWindow.friends.add(new MainWindow.Friend(0, "server", true, "Chatting with server:\n"));
+		MainWindow.friends.add(new MainWindow.Friend(101, "Tester1", true, ""));
 		
 		display.syncExec(new Runnable() {
 			@Override
