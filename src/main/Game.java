@@ -19,66 +19,6 @@ public final class Game {
 	
 	public static boolean inMatch = false;
 	
-	public static boolean sendLogin(String username, String password) {
-		try {
-			client.send("3 login " + username + " " + password, ServerIP, Port);
-			String response = client.get();
-			int n = Integer.valueOf(response.split(" ", 2)[0]);
-			String[] args = response.split(" ", n + 1);
-			if (args[1].equals("login") && args[2].equals("successful")) {
-				Loggedin = true; 
-				myID = Integer.valueOf(args[3]);
-				myNickname = args[4];
-				return true;
-			}
-			return false;
-		} catch (IOException e) {e.printStackTrace(); return false;}
-	}
-	
-	public static boolean sendMessage(String message, int recipient) {
-		try {
-			client.send("5 message " + myID + " " + recipient + " " + 
-					message.length() + " " + message, ServerIP, Port);
-			findFriend(recipient).appendMyMessage(message, new Date());
-			String response = client.get();
-			int n = Integer.valueOf(response.split(" ", 2)[0]);
-			String[] args = response.split(" ", n + 1);
-			if (args[1].equals("message") && args[2].equals("received")) {
-				return true;
-			}
-			return false;
-		} catch (IOException e) {e.printStackTrace(); return false;}
-	}
-	
-	public static boolean retrieveMessagebox() {
-		try {
-			client.send("3 retrieve message " + myID, ServerIP, Port);
-			String response = client.get();
-			int n = Integer.valueOf(response.split(" ", 2)[0]);
-			String[] args = response.split(" ", n + 1);
-			if (args[1].equals("messagebox") && !args[2].equals("0")) {
-				int l = Integer.valueOf(args[2]);
-				String s = args[3];
-				for (int i = 0; i < l; i++) {
-					n = Integer.valueOf(s.split(" ", 2)[0]);
-					String[] m = s.split(" ", n + 1);
-					if(m[3].equals("br")) {
-						findFriend(Integer.valueOf(m[1])).BattleRequest = true;
-						findFriend(Integer.valueOf(m[1])).matchNum = Integer.valueOf(m[4].split(" ", 2)[0]);
-						if(i != l-1) s = m[4].split(" ", 2)[1];
-					}
-					else {
-						int k = Integer.valueOf(m[3]);
-						findFriend(Integer.valueOf(m[1])).appendMessage(m[4].substring(0, k), new Date());
-						if(i != l-1) s = m[4].substring(k + 1);
-					}
-				}
-				return true;
-			}
-			return false;
-		} catch (IOException e) {e.printStackTrace(); return false;}
-	}
-	
 	public static boolean sendInMatchActions(String action) {
 		try {
 			client.send("4 match " + Match.matchNum + " " + myID + " " + action, ServerIP, Port);
@@ -203,6 +143,33 @@ public final class Game {
 		}
 		return null;
 	}
+	
+	public static void retrieveFriendbox() {
+		try {
+			client.send("3 retrieve message " + myID, ServerIP, Port);
+			String response = client.get();
+			int n = Integer.valueOf(response.split(" ", 2)[0]);
+			String[] args = response.split(" ", n + 1);
+			if (args[1].equals("friendbox") && !args[2].equals("0")) {
+				int l = Integer.valueOf(args[2]);
+				String s = args[3];
+				for (int i = 0; i < l; i++) {
+					n = Integer.valueOf(s.split(" ", 2)[0]);
+					String[] m = s.split(" ", n + 1);
+					if(m[3].equals("br")) {
+						findFriend(Integer.valueOf(m[1])).BattleRequest = true;
+						findFriend(Integer.valueOf(m[1])).matchNum = Integer.valueOf(m[4].split(" ", 2)[0]);
+						if(i != l-1) s = m[4].split(" ", 2)[1];
+					}
+					else {
+						int k = Integer.valueOf(m[3]);
+						findFriend(Integer.valueOf(m[1])).appendMessage(m[4].substring(0, k), new Date());
+						if(i != l-1) s = m[4].substring(k + 1);
+					}
+				}
+			}
+		} catch (IOException e) {e.printStackTrace();}
+	}
 
 	public static void main(String[] args) throws IOException {
 		Login.main();
@@ -210,6 +177,7 @@ public final class Game {
 		new MessageRetriever().start();
 		
 		MainWindow.friends.add(new MainWindow.Friend(0, "server", true, "Chatting with server:\n"));
+		MainWindow.friends.add(new MainWindow.Friend(100, "Tester0", true, ""));
 		
 		display.syncExec(new Runnable() {
 			@Override

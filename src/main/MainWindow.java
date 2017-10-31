@@ -88,7 +88,7 @@ public class MainWindow {
 	
 	public final static ArrayList<Friend> friends = new ArrayList<Friend>();
 	
-	final static class Friend {
+	public final static class Friend {
 		
 		public int ID;
 		public String Nickname;

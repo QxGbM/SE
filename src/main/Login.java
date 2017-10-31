@@ -4,7 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-public final class Login implements ActionListener{
+public final class Login {
   
 	private String un;//user name
 	private String pw;//password
@@ -18,7 +18,25 @@ public final class Login implements ActionListener{
 		un = null;
 		pw = null;
 	  
-		login.addActionListener(this);
+		login.addActionListener(new ActionListener () {
+			@Override
+			public void actionPerformed(ActionEvent click){  
+					if(fields[2].getText().length() == 0 || fields[3].getText().length() == 0){
+						JFrame badInput = new JFrame("Unacceptable");;
+						JTextArea bad = new JTextArea("Missing Username and/or password.\nRequest rejected.");
+						badInput.getContentPane().add(bad,"Center");
+						bad.setEditable(false);
+						badInput.setSize(400,200);
+						badInput.setLocation(400,400);
+						badInput.setVisible(true);
+						return;              
+					}
+					un = fields[2].getText();
+					pw = fields[3].getText();
+					fields[2].setText("");
+					fields[3].setText("");
+			}
+		});
 		fields[0].setEditable(false);
 		fields[0].setBorder(javax.swing.BorderFactory.createEmptyBorder());
 		fields[0].setBackground(new Color(0,100,255));
@@ -66,32 +84,10 @@ public final class Login implements ActionListener{
     
 		holder.getContentPane().add(content,"Center");
 		holder.setSize(500,400);
-		holder.setLocation(600,600);
+		holder.setLocation(0,0);
 		holder.setVisible(true);
 	}
   
-	//the only thing about this is that if password or user name field  is empty
-	//then those field will not be read
-	@Override
-	public void actionPerformed(ActionEvent click){
-		if(click.getSource() == login){      
-			//  badInput.dispatchEvent(new WindowEvent(badInput, WindowEvent.WINDOW_CLOSING));
-			if(fields[2].getText().length() == 0 || fields[3].getText().length() == 0){
-				JFrame badInput = new JFrame("Unacceptable");;
-				JTextArea bad = new JTextArea("Missing Username and/or password.\nRequest rejected.");
-				badInput.getContentPane().add(bad,"Center");
-				bad.setEditable(false);
-				badInput.setSize(400,200);
-				badInput.setLocation(400,400);
-				badInput.setVisible(true);
-				return;              
-			}
-			un = fields[2].getText();
-			pw = fields[3].getText();
-			fields[2].setText("");
-			fields[3].setText("");
-		}
-	}
   
 	public static void main(){
 		Login login = new Login();
