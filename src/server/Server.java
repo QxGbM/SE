@@ -10,9 +10,9 @@ import java.util.Random;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 
-import protocol.Message;
+import protocol.*;
 
-public final class UDPServer {
+public final class Server {
 	
 	public static final int port = 10010;
 	
@@ -20,9 +20,10 @@ public final class UDPServer {
 	public static DatagramPacket sendDp = null;
 	public static DatagramPacket receiveDp = null;
 	
-	public static int nextMatch = 1000;
+	public static int LastMatch = 1000;
 	
 	public static final class User {
+		
 		public int ID;
 		public String Nickname;
 		public boolean Online;
@@ -46,14 +47,6 @@ public final class UDPServer {
 			return "3 " + ID + " " + Nickname + " " + Online; 
 		}
 		
-		public String getMessageBox() {
-			String messagebox =  "3 messagebox " + MessageBuffer.size();
-			while (MessageBuffer.size() > 0){
-				messagebox += " " + MessageBuffer.remove(0).toString();
-			}
-			return messagebox;
-		}
-		
 		public String getFriendsBox() {
 			String friendbox = "3 friendbox " + friends.size();
 			for (int i = 0; i < friends.size(); i++){
@@ -71,64 +64,17 @@ public final class UDPServer {
 		public ArrayList<Action> ActionBuffer1 = new ArrayList<Action>();
 		public ArrayList<Action> ActionBuffer2 = new ArrayList<Action>();
 		
-		public Match(int mid, String p1, String p2) {
-			matchID = mid; player1 = Integer.valueOf(p1); player2 = Integer.valueOf(p2);
+		public Match(int mid, int p1, int p2) {
+			matchID = mid; player1 = p1; player2 = p2;
 			matches.add(this);
-			new Message(player1, player2, matchID).intoMessageBox();
-		}
-		
-		public String getAction(int id) {
-			if (id == player1) {
-				String actionbox =  "3 actionbox " + ActionBuffer1.size();
-				while (ActionBuffer1.size() > 0){
-					actionbox += " " + ActionBuffer1.remove(0).toString();
-				}
-				return actionbox;
-			}
-			else if (id == player2) {
-				String actionbox =  "3 actionbox " + ActionBuffer2.size();
-				while (ActionBuffer2.size() > 0){
-					actionbox += " " + ActionBuffer2.remove(0).toString();
-				}
-				return actionbox;
-			}
-			return "3 actionbox 0";
+			new Message(player1, player2, matchID).serverProcess();
 		}
 
 		public void writeStart() {
 			Random r = new Random();
 			Boolean b = r.nextBoolean();
-			new Action(matchID, player2, "2 start " + b);
-			ActionBuffer1.add(new Action(matchID, player2, "2 start " + b));
-			ActionBuffer2.add(new Action(matchID, player1, "2 start " + !b));
-		}
-	}
-	
-	public static final class Action {
-		public int match;
-		public int player;
-		public String action;
-		
-		public Action(String s) {
-			int n = Integer.valueOf(s.split(" ", 2)[0]);
-			String[] args = s.split(" ", n + 1);
-			match = Integer.valueOf(args[1]);
-			player = Integer.valueOf(args[2]);
-			action = args[3];
-		}
-		
-		public Action(int m, int p, String a) {
-			match = m; player = p; action = a;
-		}
-		
-		public String toString() {
-			return "3 " + match + " " + player + " " + action;
-		}
-		
-		public void intoActionBox() {
-			Match m = findMatch(match);
-			if(m.player1 == player) m.ActionBuffer1.add(this);
-			if(m.player2 == player) m.ActionBuffer2.add(this);
+			ActionBuffer1.add(new Action(matchID, player2, b));
+			ActionBuffer2.add(new Action(matchID, player1, !b));
 		}
 	}
 	
@@ -149,6 +95,13 @@ public final class UDPServer {
 		return null;
 	}
 	
+	public static int createMatch(int player1, int player2) {
+		LastMatch++;
+		Match m = new Match (LastMatch, player1, player2);
+		matches.add(m);
+		return LastMatch;
+	}
+	
 	public static String login(String username, String password) {
 		for (int i = 0; i < users.size(); i++){
 			if (users.get(i).login(username, password)) 
@@ -158,55 +111,24 @@ public final class UDPServer {
 	}
 	
 	public static String parseCommand(String s) {
-		int n = Integer.valueOf(s.split(" ", 2)[0]);
-		String[] args = s.split(" ", n + 1);
-		if(args[1].equals("login")) {
-			// "3 login USERNAME PASSWORD"
+		String[] args = s.split(" ", 2);
+		if(args[0].equals("Login")) {
 			return login (args[2], args[3]);
 		} 
-		else if (args[1].equals("message")) {
-			// "2 message BODY" BODY = "3 FROMID TOID MESSAGE"
-			new Message(args[2]).intoMessageBox();
-			return "2 message received";
+		else if (args[0].equals("Message")) {
+			new Message(s).serverProcess();
+			return "message received";
 		}
-		else if (args[1].equals("match")) {
-			if (args[2].equals("request")) {
-				// "4 match request PLAYER1 PLAYER2"
-				new Match(nextMatch, args[3], args[4]);
-				nextMatch++;
-				return "3 match accepted " + (nextMatch-1);
-			}
-			else if (args[2].equals("accept")) {
-				// "3 match accept MATCHID"
-				Match m = findMatch(Integer.valueOf(args[3]));
-				m.writeStart();
-				return "3 match accepted " + m.matchID;
-			}
-			else
-				return "2 match unknown";
+		else if (args[0].equals("Action")) {
+			new Action(s).serverProcess();
+			return "action received";
 		}
-		else if (args[1].equals("action")) {
-			// "2 action BODY"
-			new Action(args[2]).intoActionBox();
-			return "2 action received";
+		else if (args[0].equals("retrieve")) {
+			Retrieve r = new Retrieve(s);
+			r.serverProcess();
+			return r.retrievalResult;
 		}
-		else if (args[1].equals("retrieve")) {
-			if (args[2].equals("message")) {
-				// "3 retrieve message PLAYERID"
-				return findUser(Integer.valueOf(args[3])).getMessageBox();
-			}
-			else if (args[2].equals("action")) {
-				// "3 retrieve action MATCHID PLAYERID"
-				return findMatch(Integer.valueOf(args[3])).getAction(Integer.valueOf(args[4]));
-			}
-			else if (args[2].equals("friends")) {
-				// "3 retrieve friends PLAYERID"
-				return findUser(Integer.valueOf(args[3])).getFriendsBox();
-			}
-			else 
-				return "3 retrieve error Unknown retrieval type";
-		}
-		else return "3 general error Command not recognized.";
+		else return "general error Command not recognized.";
 	}
 	
 	public static String readwrite() throws IOException{
@@ -244,7 +166,7 @@ public final class UDPServer {
 			@Override
 			public void run() {
 				JFrame frame = new JFrame("server panel");
-				JButton button = new JButton("shutoff");
+				JButton button = new JButton("Terminate");
 				button.addActionListener(new ActionListener () {
 					@Override
 					public void actionPerformed(ActionEvent arg0) {
