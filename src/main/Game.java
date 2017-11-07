@@ -35,7 +35,7 @@ public final class Game {
 
 	public static void main(String[] args) {
 		NetClient.startNetClient();
-		LoginWindow.main();
+		/*LoginWindow.main();
 		
 		MainWindow.friends.add(new MainWindow.Friend(0, "server", true, "Chatting with server:\n"));
 		MainWindow.friends.add(new MainWindow.Friend(100, "Tester0", true, ""));
@@ -47,7 +47,11 @@ public final class Game {
 			}
 		});
 		
-		new MessageRetriever().start();
+		new MessageRetriever().start();*/
+		Loggedin = true;
+		myID = 100;
+		startMatch(101, true);
+		Match.matchNum = 1000;
 		
 		while(Loggedin) {
 			if (!display.readAndDispatch()) display.sleep();
@@ -55,6 +59,8 @@ public final class Game {
 		
 		display.dispose();
 		NetClient.close();
+		
+		
 	}
 	
 	public final static class MessageRetriever extends Thread {
@@ -80,19 +86,15 @@ public final class Game {
 			matchNum = n;
 		}
 		
-		public void retrieveActionBox() {
-			Retrieve r = new Retrieve(matchNum, myID);
-			NetClient.send(r.toString());
-			Action.ActionBox ab = new Action.ActionBox(NetClient.get());
-			ab.clientParse();
-		}
-		
 		public void run () {
 			while (inMatch) {
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {e.printStackTrace();}
-				retrieveActionBox();
+				Retrieve r = new Retrieve(matchNum, myID);
+				NetClient.send(r.toString());
+				Action.ActionBox ab = new Action.ActionBox(NetClient.get());
+				ab.clientParse();
 			}
 		}
 	}

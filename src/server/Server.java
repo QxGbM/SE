@@ -166,6 +166,9 @@ public final class Server {
 		tester1.friends.add(tester0);
 		tester1.friends.add(server);
 		
+		Match m = new Match(1000, 100, 101);
+		matches.add(m);
+		
 		new Thread() {
 			@Override
 			public void run() {

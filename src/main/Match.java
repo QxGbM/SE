@@ -381,10 +381,10 @@ public final class Match {
 					int[] coordinates = new int[2];
 					coordinates[0] = i; coordinates[1] = j;
 					if(summon(myHand.get(cardSummon), coordinates)) {
+						NetClient.sendAction(new Action(matchNum, Game.myID, myHand.get(cardSummon).getID(), i, j));
 						myHand.get(cardSummon).setEmpty();
 						selectedSummon = false;
 						logDisplay.append("Summon to: (" + i + ", " + j + ")\n");
-						NetClient.sendAction(new Action(matchNum, Game.myID, myHand.get(cardSummon).getID(), i, j));
 					}
 				}
 			}
