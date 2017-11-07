@@ -12,7 +12,7 @@ public class Retrieve implements Request {
 	public int intField1 = 0;
 	public int intField2 = 0;
 	
-	public String retrievalResult = "";
+	public Response retrievalResult;
 	
 	public Retrieve (String s) {
 		String[] args = s.split(" ");
@@ -51,18 +51,15 @@ public class Retrieve implements Request {
 	public void serverProcess() {
 		if (arg1.equals("MessageBox")) {
 			User i = Server.findUser(intField1);
-			Message.MessageBox mb = new Message.MessageBox(i.MessageBuffer);
-			retrievalResult = mb.toString();
+			retrievalResult = new Message.MessageBox(i.MessageBuffer);
 		}
 		if (arg1.equals("ActionBox")) {
-			Match i = Server.findMatch(intField2);
-			if (i.player1 == intField1) {
-				Action.ActionBox ab = new Action.ActionBox(i.ActionBuffer2);
-				retrievalResult = ab.toString();
+			Match i = Server.findMatch(intField1);
+			if (i.player1 == intField2) {
+				retrievalResult = new Action.ActionBox(i.ActionBuffer1);
 			}
-			if (i.player2 == intField1) {
-				Action.ActionBox ab = new Action.ActionBox(i.ActionBuffer1);
-				retrievalResult = ab.toString();
+			if (i.player2 == intField2) {
+				retrievalResult = new Action.ActionBox(i.ActionBuffer2);
 			}
 		}
 	}

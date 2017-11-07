@@ -4,7 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-public final class Login {
+public final class LoginWindow {
   
 	private String un;//user name
 	private String pw;//password
@@ -14,7 +14,7 @@ public final class Login {
 	private JButton login = new JButton("log in");
 
 	//you don't need  to read the constructor
-	protected Login(){
+	protected LoginWindow(){
 		un = null;
 		pw = null;
 	  
@@ -89,15 +89,15 @@ public final class Login {
 	}
   
   
-	public static void main(){
-		Login login = new Login();
+	public static void main() {
+		LoginWindow login = new LoginWindow();
 		while (Game.Loggedin == false) {
 			while (!(login.un != null && login.pw != null)) {
 				try {
 					Thread.sleep(10);
 				} catch (InterruptedException e) {e.printStackTrace();}
 			}
-			Game.sendLogin(login.un, login.pw);
+			NetClient.sendLogin(login.un, login.pw);
 			login.pw = null; login.un = null;
 		}
 		login.holder.dispose();

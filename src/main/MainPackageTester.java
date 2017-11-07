@@ -41,26 +41,5 @@ public class MainPackageTester {
 	}
  
  
-	@Test
-	public void testGame() {
-
-	 
-		assertEquals(false,Game.sendLogin("bogus", "trollbard"));
-	 
-		assertEquals(false,Game.sendMessage("test", 1));
-	 
-		assertEquals(false,Game.retrieveMessagebox());
-	 
-		assertEquals(false,Game.sendInMatchActions(null));
-	 
-		assertEquals(false,Game.sendBattleRequest(0));
-	 
-		assertEquals(false,Game.sendBattleAccept(1));
-	 
-		assertEquals(null,Game.findFriend(-1));
-	 
-	 
-	 
-	}
  
 }

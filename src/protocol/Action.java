@@ -51,16 +51,19 @@ public class Action implements Request, Response {
 	}
 	
 	public Action(int m, int p, int x1, int y1, int x2, int y2) {
+		// skill with target
 		matchID = m; playerID = p; actionType = "skill";
 		intField1 = (3-x1) * 4 + (3-y1); intField2 = (3-x2) * 4 + (3-y2); boolField1 = true;
 	}
 	
 	public Action(int m, int p, int x, int y) {
+		// skill without target
 		matchID = m; playerID = p; actionType = "skill";
 		intField1 = (3-x) * 4 + (3-y);
 	}
 	
 	public Action(int m, int p, int mID, int x, int y) {
+		// summon
 		matchID = m; playerID = p; actionType = "summon";
 		intField1 = mID; intField2 = (3-x) * 4 + (3-y);
 	}
@@ -86,14 +89,31 @@ public class Action implements Request, Response {
 	}
 
 	public void clientParse() {
-		// TODO Auto-generated method stub
+		if(actionType.equals("start")) {
+			main.Game.startMatch(playerID, boolField1);
+		}
+		else if (actionType.equals("endTurn")) {
+			main.Match.opponentEndTurn();
+		}
+		else if (actionType.equals("summon")) {
+			main.Match.opponentSummon(this);
+		}
+		else if (actionType.equals("skill")) {
+			main.Match.opponentSkillActivation(this);
+		}
+		else if (actionType.equals("surrender")) {
+			main.Match.win();
+		}
+		else if (actionType.equals("close")) {
+			main.Game.inMatch = false;
+		}
 		
 	}
 
 	public void serverProcess() {
 		Match m = Server.findMatch(matchID);
-		if(m.player1 == playerID) m.ActionBuffer1.add(this);
-		if(m.player2 == playerID) m.ActionBuffer2.add(this);
+		if(m.player2 == playerID) m.ActionBuffer1.add(this);
+		if(m.player1 == playerID) m.ActionBuffer2.add(this);
 	}
 	
 	public static class ActionBox implements Response {

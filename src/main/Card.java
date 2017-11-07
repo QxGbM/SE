@@ -5,6 +5,9 @@ import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+
+import protocol.Action;
+
 import org.eclipse.swt.layout.*;
 import org.eclipse.swt.layout.GridLayout;
 
@@ -123,8 +126,8 @@ public final class Card{
 		return identifier >= 200;
 	}
 	
-	public String getID() {
-		return Integer.toString(identifier);
+	public int getID() {
+		return identifier;
 	}
 	
 	public boolean matchID(int id) {
@@ -299,8 +302,7 @@ public final class Card{
 			int w = Match.cardSkillActivation[0], z = Match.cardSkillActivation[1];
 			Match.board[w][z].updateDisplay();
 			skillUsed = true;
-			int p = 15 - 4 * w - z;
-			Game.sendInMatchActions("3 skill " + p + " false");
+			NetClient.sendAction(new Action(Match.matchNum, Game.myID, w, z));
 			return false;
 		}
 		else {
@@ -409,9 +411,9 @@ public final class Card{
 			}
 		}
 		skillUsed = true;
-		int p1 = 15 - 4 * Match.cardSkillActivation[0] - Match.cardSkillActivation[1];
-		int p2 = 15 - 4 * Match.coordinatesTemp[0] - Match.coordinatesTemp[1];
-		Game.sendInMatchActions("4 skill " + p1 + " true " + p2);
+		int x = Match.cardSkillActivation[0], y = Match.cardSkillActivation[1];
+		int w = Match.coordinatesTemp[0], z = Match.coordinatesTemp[1];
+		NetClient.sendAction(new Action(Match.matchNum, Game.myID, x, y, w, z));
 	}
 	
 	public void aftTurnCheck(){

@@ -56,7 +56,7 @@ public class MainWindow {
   			public void actionPerformed(ActionEvent e) {
   				Game.Loggedin = false;
   				mainwindow.dispose();
-  				Login.main();
+  				LoginWindow.main();
   			}
   		});
 		
@@ -172,7 +172,7 @@ public class MainWindow {
 				JOptionPane.showMessageDialog(mainwindow, "Friend is Offline");
 				return;
 			}
-			else Game.sendBattleRequest(ID);
+			else NetClient.sendBattleRequest(ID);
 		}
 	}
 	
@@ -255,7 +255,10 @@ public class MainWindow {
 			if (f.BattleRequest) {
 				int confirm = JOptionPane.showConfirmDialog(mainwindow, "Battle With " + f.Nickname + "?");
 				if (confirm == 0) {
-					Game.sendBattleAccept(f.matchNum);
+					NetClient.sendBattleAccept(f.matchNum, true);
+				}
+				else {
+					NetClient.sendBattleAccept(f.matchNum, false);
 				}
 			}
 		}

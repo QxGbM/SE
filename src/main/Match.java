@@ -17,6 +17,8 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
+import protocol.Action;
+
 public final class Match {
 	
 	public static int opponentID;
@@ -72,7 +74,7 @@ public final class Match {
 	public static Label opponentVPGenlabel;
 	
 	public static void win() {
-		Game.sendInMatchActions("1 close");
+		NetClient.sendAction(new Action(matchNum, Game.myID, "close"));
 		MessageBox dialog = new MessageBox(shell, SWT.OK | SWT.ICON_INFORMATION);
 		dialog.setText("Notification");
 		dialog.setMessage("You Won!");
@@ -82,7 +84,7 @@ public final class Match {
 	}
 	
 	public static void lose() {
-		Game.sendInMatchActions("1 close");
+		NetClient.sendAction(new Action(matchNum, Game.myID, "close"));
 		MessageBox dialog = new MessageBox(shell, SWT.OK | SWT.ICON_INFORMATION);
 		dialog.setText("Notification");
 		dialog.setMessage("You Lost!");
@@ -125,7 +127,7 @@ public final class Match {
 				}
 				logDisplay.append("Turn End.\n");
 				
-				Game.sendInMatchActions("1 endturn");
+				NetClient.sendAction(new Action(Game.myID, matchNum, "endturn"));
 				myAftTurn();
 				
 				if(!shell.isDisposed()) {
@@ -138,7 +140,7 @@ public final class Match {
 		
 		surrender.setText("Surrender");
 		Listener surrenderListener = e -> {
-			Game.sendInMatchActions("1 surrender");
+			NetClient.sendAction(new Action(Game.myID, matchNum, "surrender"));
 			MessageBox dialog = new MessageBox(shell, SWT.OK | SWT.CANCEL | SWT.ICON_QUESTION);
 			dialog.setText("Surrender Confirmation");
 			dialog.setMessage("Surrender?");
@@ -379,12 +381,10 @@ public final class Match {
 					int[] coordinates = new int[2];
 					coordinates[0] = i; coordinates[1] = j;
 					if(summon(myHand.get(cardSummon), coordinates)) {
-						String action = "3 summon " + myHand.get(cardSummon).getID();
-						action += " " + Integer.toString(15-4*i-j);
 						myHand.get(cardSummon).setEmpty();
 						selectedSummon = false;
 						logDisplay.append("Summon to: (" + i + ", " + j + ")\n");
-						Game.sendInMatchActions(action);
+						NetClient.sendAction(new Action(matchNum, Game.myID, myHand.get(cardSummon).getID(), i, j));
 					}
 				}
 			}
@@ -598,8 +598,9 @@ public final class Match {
 		return l;
 	}
 
-	public Match(boolean moveFirst) {
+	public static void startMatch(int oID, boolean moveFirst) {
 		
+		opponentID = oID;
 		endTurn = !moveFirst;
 		
 		board = new Card[4][4];
@@ -690,6 +691,52 @@ public final class Match {
 		shell.pack();
 		shell.open();
 
+	}
+	
+	public static void opponentEndTurn() {
+		display.syncExec(new Runnable () {
+			public void run(){
+				opponentAftTurn();
+			}
+		});
+		if(!shell.isDisposed()) {
+			endTurn = false;
+			display.syncExec(new Runnable () {
+				public void run(){
+					myPreTurn();
+				}
+			});
+		}
+	}
+	
+	public static void opponentSkillActivation(Action a) {
+		int x = a.intField1 / 4, y = a.intField1 % 4;
+		if (a.boolField1) {
+			coordinatesTemp[0] = a.intField2 / 4;
+			coordinatesTemp[1] = a.intField2 % 4;
+			display.syncExec(new Runnable () {
+				public void run(){
+					board[x][y].spellCheckWithSelectedCoordinates();
+				}
+			});
+		} else {
+			display.syncExec(new Runnable () {
+				public void run(){
+					board[x][y].spellCheck();
+				}
+			});
+		}
+	}
+	
+	public static void opponentSummon(Action a) {
+		int mID = a.intField1;
+		int[] coordinates = new int[2];
+		coordinates[0] = a.intField2 / 4; coordinates[1] = a.intField2 % 4;
+		display.syncExec(new Runnable () {
+			public void run(){
+				summon(Match.findCardByID(mID), coordinates);
+			}
+		});
 	}
 	
 }

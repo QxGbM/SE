@@ -11,8 +11,8 @@ public class Message implements Request, Response {
 	
 	public final String type = "Message";
 	
-	public int fromID;
-	public int toID;
+	public int fromID = 0;
+	public int toID = 0;
 	public boolean isBattleRequest = false;
 	public String message = "";
 	public int length = 0;
@@ -60,13 +60,13 @@ public class Message implements Request, Response {
 		this.matchID = matchID;
 	}
 	
-	public Message(int from, int to, int matchID, boolean accept) {
+	public Message(int from, int matchID, boolean accept) {
 		// Client side Battle Request w/ accept or reject
-		fromID = from; toID = to;
+		fromID = from;
 		isBattleRequest = true;
 		this.matchID = matchID;
-		if (accept) message = "accept"; 
-		else message = "reject";
+		if (accept) message = "Accept"; 
+		else message = "Reject";
 	}
 	
 	public Message(int from, int to, String message) {
@@ -87,7 +87,17 @@ public class Message implements Request, Response {
 	public void serverProcess() {
 		User i = Server.findUser(toID);
 		if (isBattleRequest) {
-			message = Integer.toString(Server.createMatch(fromID, toID));
+			if (message.equals("Request")) {
+				matchID = Server.createMatch(fromID, toID);
+				System.out.println(matchID + " is created");
+				i.MessageBuffer.add(this);
+			}
+			else if (message.equals("Accept")) {
+				Server.findMatch(matchID).writeStart();
+			}
+			else if (message.equals("Reject")) {
+				Server.findMatch(matchID).close();
+			}
 		}
 		else i.MessageBuffer.add(this);
 	}

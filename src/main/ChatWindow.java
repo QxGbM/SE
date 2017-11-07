@@ -57,7 +57,7 @@ public class ChatWindow{
 		
 		Listener sendListener = e -> {
 			if (!input.getText().equals("")) {
-				Game.sendMessage(input.getText(), recipient);
+				NetClient.sendMessage(input.getText(), recipient);
 				textDisplay.setText(Game.findFriend(recipient).Message);
 				input.setText("");
 			}

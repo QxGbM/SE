@@ -15,13 +15,13 @@ public class testProtocol {
 		Action.ActionBox ab2 = new Action.ActionBox (ab.toString());
 		System.out.println(ab2.toString());
 		
-		Message m1 = new Message(100, 101, 1000, true);
+		Message m1 = new Message(100, 101, true);
 		Message m2 = new Message(100, 101, "how are you?");
 		ArrayList<Message> l1 = new ArrayList<Message>();
 		l1.add(m1); l1.add(m2);
 		Message.MessageBox mb1 = new Message.MessageBox(l1);
 		System.out.println(mb1.toString());
-		Message.MessageBox mb2 = new Message.MessageBox(mb1.toString());
+		Message.MessageBox mb2 = new Message.MessageBox("MessageBox 1 Message 100 100 BattleRequest Request 1001");
 		System.out.println(mb2.toString());
 	}
 }

@@ -26,33 +26,25 @@ public final class Server {
 		
 		public int ID;
 		public String Nickname;
-		public boolean Online;
-		public ArrayList<User> friends = new ArrayList<User>();
-		public ArrayList<Message> MessageBuffer = new ArrayList<Message>();
 		
 		private String username;
 		private String password;
 		
+		public boolean Online = false;
+		public ArrayList<User> friends = new ArrayList<User>();
+		public ArrayList<Message> MessageBuffer = new ArrayList<Message>();
+		
 		public User(int id, String nickname, String un, String pw) {
-			ID = id; Nickname = nickname; Online = false;
+			ID = id; Nickname = nickname;
 			username = un; password = pw;
 		}
 		
 		public boolean login(String un, String pw) {
-			if (username.equals(un) && password.equals(pw)) Online = true;
-			return Online;
+			return Online = username.equals(un) && password.equals(pw);
 		}
 		
 		public String toString() {
-			return "3 " + ID + " " + Nickname + " " + Online; 
-		}
-		
-		public String getFriendsBox() {
-			String friendbox = "3 friendbox " + friends.size();
-			for (int i = 0; i < friends.size(); i++){
-				friendbox += " " + friends.get(i).toString();
-			}
-			return friendbox;
+			return "User " + ID + " " + Nickname + " " + Online; 
 		}
 	}
 
@@ -61,13 +53,12 @@ public final class Server {
 		public int player1;
 		public int player2;
 		public int matchID;
+		
 		public ArrayList<Action> ActionBuffer1 = new ArrayList<Action>();
 		public ArrayList<Action> ActionBuffer2 = new ArrayList<Action>();
 		
 		public Match(int mid, int p1, int p2) {
 			matchID = mid; player1 = p1; player2 = p2;
-			matches.add(this);
-			new Message(player1, player2, matchID).serverProcess();
 		}
 
 		public void writeStart() {
@@ -75,6 +66,21 @@ public final class Server {
 			Boolean b = r.nextBoolean();
 			ActionBuffer1.add(new Action(matchID, player2, b));
 			ActionBuffer2.add(new Action(matchID, player1, !b));
+		}
+		
+		public void close() {
+			ActionBuffer1.add(new Action(matchID, player2, "close"));
+			ActionBuffer2.add(new Action(matchID, player1, "close"));
+			
+			new Thread() {
+				@Override
+				public void run() {
+					try {
+						sleep(10000);
+					} catch (InterruptedException e) {e.printStackTrace();}
+					matches.remove(this);
+				}
+			}.start();
 		}
 	}
 	
@@ -102,36 +108,31 @@ public final class Server {
 		return LastMatch;
 	}
 	
-	public static String login(String username, String password) {
-		for (int i = 0; i < users.size(); i++){
-			if (users.get(i).login(username, password)) 
-				return "4 login successful " + users.get(i).ID + " " + users.get(i).Nickname;
-		}
-		return "3 login error Incorrect username or password";
-	}
-	
-	public static String parseCommand(String s) {
+	public static Response parseCommand(String s) {
 		String[] args = s.split(" ", 2);
 		if(args[0].equals("Login")) {
-			return login (args[2], args[3]);
+			Login l = new Login(s);
+			l.serverProcess();
+			return l.loginResult;
 		} 
 		else if (args[0].equals("Message")) {
-			new Message(s).serverProcess();
-			return "message received";
+			Message m = new Message(s);
+			m.serverProcess();
+			return new ACK(m.matchID);
 		}
 		else if (args[0].equals("Action")) {
 			new Action(s).serverProcess();
-			return "action received";
+			return new ACK();
 		}
-		else if (args[0].equals("retrieve")) {
+		else if (args[0].equals("Retrieve")) {
 			Retrieve r = new Retrieve(s);
 			r.serverProcess();
 			return r.retrievalResult;
 		}
-		else return "general error Command not recognized.";
+		else return new ACK("ERR Command Unknown");
 	}
 	
-	public static String readwrite() throws IOException{
+	public static void readwrite() throws IOException {
 		byte[] b = new byte[1024];
 		receiveDp = new DatagramPacket(b, b.length);
 		ds.receive(receiveDp);
@@ -140,17 +141,20 @@ public final class Server {
 		int clientPort = receiveDp.getPort();
 		byte[] data = receiveDp.getData();
 		int len = receiveDp.getLength();
+		System.out.println("received: " + new String(data, 0, len));
 		
-		String response = parseCommand(new String(data, 0, len));
+		String response = parseCommand(new String(data, 0, len)).toString();
 		byte[] bData = response.getBytes();
 		sendDp = new DatagramPacket(bData, bData.length, clientIP, clientPort);
 		ds.send(sendDp);
-		return response;
+		System.out.println("returned: " + response);
+		return;
 	}
 	
 	public static void main(String args[]) throws IOException {
 		
 		ds = new DatagramSocket(port);
+		
 		User server = new User(0, "Server", "", "");
 		User tester0 = new User(100, "Tester0", "admin0", "password");
 		User tester1 = new User(101, "Tester1", "admin1", "password");
@@ -165,7 +169,7 @@ public final class Server {
 		new Thread() {
 			@Override
 			public void run() {
-				JFrame frame = new JFrame("server panel");
+				JFrame frame = new JFrame("Server Panel");
 				JButton button = new JButton("Terminate");
 				button.addActionListener(new ActionListener () {
 					@Override
@@ -180,8 +184,21 @@ public final class Server {
 			}
 		}.start();
 		
+		/*System.out.println(parseCommand(new Login("admin0", "password").toString()).toString());
+		
+		System.out.println(parseCommand(new Message(100, 101, "hi").toString()).toString());
+		System.out.println(parseCommand(new Retrieve(101).toString()).toString());
+		System.out.println(parseCommand(new Retrieve(101).toString()).toString());
+		
+		System.out.println(parseCommand(new Message(100, 101).toString()).toString());
+		System.out.println(parseCommand(new Retrieve(101).toString()).toString());
+		System.out.println(parseCommand(new Message(101, 1001, true).toString()).toString());
+		System.out.println(parseCommand(new Retrieve(100, 1001).toString()).toString());
+		System.out.println(parseCommand(new Retrieve(101, 1001).toString()).toString());*/
+
+		
 		while(true) {
-			System.out.println(readwrite());
+			readwrite();
 		}
 	}
 }
