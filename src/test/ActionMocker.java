@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.border.EmptyBorder;
@@ -29,6 +30,7 @@ public class ActionMocker {
 		
 		JTextArea textarea = new JTextArea();
 		JButton send = new JButton("send");
+		JLabel label = new JLabel();
 		JPanel panel = new JPanel(new GridBagLayout());
 		panel.setBorder(new EmptyBorder(5,5,5,5));
 		
@@ -52,7 +54,7 @@ public class ActionMocker {
 				String s = "Action " + MatchNum + " " + playerID + " " + combobox.getSelectedItem() + " " + textarea.getText();
 				textarea.setText("");
 				NetClient.send(s);
-				System.out.println(NetClient.get());
+				label.setText(NetClient.get());
 			}
 		});
 		
@@ -68,6 +70,8 @@ public class ActionMocker {
 		panel.add(textarea, constraints);
 		constraints.weighty = 1;
 		constraints.gridy = 3;
+		panel.add(label, constraints);
+		constraints.gridy = 4;
 		panel.add(send, constraints);
 		frame.add(panel);
 		frame.setSize(500, 500);

@@ -1,5 +1,7 @@
 package server;
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
@@ -9,6 +11,10 @@ import java.util.Random;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.border.EmptyBorder;
 
 import protocol.*;
 
@@ -21,6 +27,8 @@ public final class Server {
 	public static DatagramPacket receiveDp = null;
 	
 	public static int LastMatch = 1000;
+	
+	public static JTextArea serverLog = new JTextArea();
 	
 	public static final class User {
 		
@@ -133,6 +141,9 @@ public final class Server {
 	}
 	
 	public static void readwrite() throws IOException {
+		
+		if(serverLog.getText().length() >= 10000) serverLog.setText("");
+		
 		byte[] b = new byte[1024];
 		receiveDp = new DatagramPacket(b, b.length);
 		ds.receive(receiveDp);
@@ -141,19 +152,19 @@ public final class Server {
 		int clientPort = receiveDp.getPort();
 		byte[] data = receiveDp.getData();
 		int len = receiveDp.getLength();
-		System.out.println("received: " + new String(data, 0, len));
+		serverLog.append("received: " + new String(data, 0, len) + "\n");
 		
 		String response = parseCommand(new String(data, 0, len)).toString();
 		byte[] bData = response.getBytes();
 		sendDp = new DatagramPacket(bData, bData.length, clientIP, clientPort);
 		ds.send(sendDp);
-		System.out.println("returned: " + response);
-		return;
+		serverLog.append("returned: " + response + "\n\n");
 	}
 	
 	public static void main(String args[]) throws IOException {
 		
 		ds = new DatagramSocket(port);
+		serverLog.setEditable(false);
 		
 		User server = new User(0, "Server", "", "");
 		User tester0 = new User(100, "Tester0", "admin0", "password");
@@ -174,6 +185,8 @@ public final class Server {
 			public void run() {
 				JFrame frame = new JFrame("Server Panel");
 				JButton button = new JButton("Terminate");
+				JPanel panel = new JPanel(new GridBagLayout());
+				panel.setBorder(new EmptyBorder(5,5,5,5));
 				button.addActionListener(new ActionListener () {
 					@Override
 					public void actionPerformed(ActionEvent arg0) {
@@ -181,8 +194,21 @@ public final class Server {
 						System.exit(0);
 					}
 				});
-				frame.add(button);
-				frame.pack();
+				
+				JScrollPane scrollpane = new JScrollPane(serverLog);
+				
+				GridBagConstraints constraints = new GridBagConstraints();
+				constraints.fill = GridBagConstraints.BOTH;
+				constraints.weightx = 1;
+				constraints.weighty = 3;
+				constraints.gridx = 1;
+				constraints.gridy = 1;
+				panel.add(scrollpane, constraints);
+				constraints.weighty = 1;
+				constraints.gridy = 2;
+				panel.add(button, constraints);
+				frame.add(panel);
+				frame.setSize(500, 500);
 				frame.setVisible(true);
 			}
 		}.start();
