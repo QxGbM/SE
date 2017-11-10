@@ -92,7 +92,7 @@ public class Action implements Request, Response {
 		if(actionType.equals("start")) {
 			main.Game.startMatch(playerID, boolField1);
 		}
-		else if (actionType.equals("endTurn")) {
+		else if (actionType.equals("endturn")) {
 			main.Match.opponentEndTurn();
 		}
 		else if (actionType.equals("summon")) {

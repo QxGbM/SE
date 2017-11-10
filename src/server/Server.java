@@ -187,17 +187,12 @@ public final class Server {
 			}
 		}.start();
 		
-		/*System.out.println(parseCommand(new Login("admin0", "password").toString()).toString());
-		
-		System.out.println(parseCommand(new Message(100, 101, "hi").toString()).toString());
-		System.out.println(parseCommand(new Retrieve(101).toString()).toString());
-		System.out.println(parseCommand(new Retrieve(101).toString()).toString());
-		
-		System.out.println(parseCommand(new Message(100, 101).toString()).toString());
-		System.out.println(parseCommand(new Retrieve(101).toString()).toString());
-		System.out.println(parseCommand(new Message(101, 1001, true).toString()).toString());
-		System.out.println(parseCommand(new Retrieve(100, 1001).toString()).toString());
-		System.out.println(parseCommand(new Retrieve(101, 1001).toString()).toString());*/
+		new Thread() {
+			@Override
+			public void run() {
+				test.ActionMocker.main(null);
+			}
+		}.start();
 
 		
 		while(true) {

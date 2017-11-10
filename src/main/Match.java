@@ -127,7 +127,7 @@ public final class Match {
 				}
 				logDisplay.append("Turn End.\n");
 				
-				NetClient.sendAction(new Action(Game.myID, matchNum, "endturn"));
+				NetClient.sendAction(new Action(matchNum, Game.myID, "endturn"));
 				myAftTurn();
 				
 				if(!shell.isDisposed()) {
@@ -140,7 +140,7 @@ public final class Match {
 		
 		surrender.setText("Surrender");
 		Listener surrenderListener = e -> {
-			NetClient.sendAction(new Action(Game.myID, matchNum, "surrender"));
+			NetClient.sendAction(new Action(matchNum, Game.myID, "surrender"));
 			MessageBox dialog = new MessageBox(shell, SWT.OK | SWT.CANCEL | SWT.ICON_QUESTION);
 			dialog.setText("Surrender Confirmation");
 			dialog.setMessage("Surrender?");
@@ -694,18 +694,10 @@ public final class Match {
 	}
 	
 	public static void opponentEndTurn() {
-		display.syncExec(new Runnable () {
-			public void run(){
-				opponentAftTurn();
-			}
-		});
+		opponentAftTurn();
 		if(!shell.isDisposed()) {
 			endTurn = false;
-			display.syncExec(new Runnable () {
-				public void run(){
-					myPreTurn();
-				}
-			});
+			myPreTurn();
 		}
 	}
 	
@@ -714,17 +706,9 @@ public final class Match {
 		if (a.boolField1) {
 			coordinatesTemp[0] = a.intField2 / 4;
 			coordinatesTemp[1] = a.intField2 % 4;
-			display.syncExec(new Runnable () {
-				public void run(){
-					board[x][y].spellCheckWithSelectedCoordinates();
-				}
-			});
+			board[x][y].spellCheckWithSelectedCoordinates();
 		} else {
-			display.syncExec(new Runnable () {
-				public void run(){
-					board[x][y].spellCheck();
-				}
-			});
+			board[x][y].spellCheck();
 		}
 	}
 	
@@ -732,11 +716,7 @@ public final class Match {
 		int mID = a.intField1;
 		int[] coordinates = new int[2];
 		coordinates[0] = a.intField2 / 4; coordinates[1] = a.intField2 % 4;
-		display.syncExec(new Runnable () {
-			public void run(){
-				summon(Match.findCardByID(mID), coordinates);
-			}
-		});
+		summon(Match.findCardByID(mID), coordinates);
 	}
 	
 }

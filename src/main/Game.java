@@ -17,7 +17,6 @@ public final class Game {
 	
 	public static boolean inMatch = false;
 
-	
 	public static void startMatch (int oID, boolean moveFirst) {
 		display.syncExec(new Runnable () {
 			public void run(){
@@ -49,9 +48,11 @@ public final class Game {
 		
 		new MessageRetriever().start();*/
 		Loggedin = true;
+		inMatch = true;
 		myID = 100;
-		startMatch(101, true);
+		startMatch(101, false);
 		Match.matchNum = 1000;
+		new ActionRetriever(1000).start();
 		
 		while(Loggedin) {
 			if (!display.readAndDispatch()) display.sleep();
@@ -59,7 +60,6 @@ public final class Game {
 		
 		display.dispose();
 		NetClient.close();
-		
 		
 	}
 	
@@ -94,7 +94,12 @@ public final class Game {
 				Retrieve r = new Retrieve(matchNum, myID);
 				NetClient.send(r.toString());
 				Action.ActionBox ab = new Action.ActionBox(NetClient.get());
-				ab.clientParse();
+				display.syncExec(new Runnable () {
+					@Override
+					public void run(){
+						ab.clientParse();
+					}
+				});
 			}
 		}
 	}
