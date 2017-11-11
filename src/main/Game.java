@@ -17,10 +17,10 @@ public final class Game {
 	
 	public static boolean inMatch = false;
 
-	public static void startMatch (int oID, boolean moveFirst) {
+	public static void startMatch (int oID, int mID, boolean moveFirst) {
 		display.syncExec(new Runnable () {
 			public void run(){
-				Match.startMatch(oID, moveFirst);
+				Match.startMatch(oID, mID, moveFirst);
 			}
 		});
 	}
@@ -50,8 +50,7 @@ public final class Game {
 		Loggedin = true;
 		inMatch = true;
 		myID = 100;
-		startMatch(101, false);
-		Match.matchNum = 1000;
+		new Action("Action 1000 101 start false").clientParse();
 		new ActionRetriever(1000).start();
 		
 		while(Loggedin) {

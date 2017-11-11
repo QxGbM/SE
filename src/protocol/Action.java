@@ -90,7 +90,7 @@ public class Action implements Request, Response {
 
 	public void clientParse() {
 		if(actionType.equals("start")) {
-			main.Game.startMatch(playerID, boolField1);
+			main.Game.startMatch(playerID, matchID, boolField1);
 		}
 		else if (actionType.equals("endturn")) {
 			main.Match.opponentEndTurn();
@@ -114,6 +114,7 @@ public class Action implements Request, Response {
 		Match m = Server.findMatch(matchID);
 		if(m.player2 == playerID) m.ActionBuffer1.add(this);
 		if(m.player1 == playerID) m.ActionBuffer2.add(this);
+		if(actionType.equals("close")) m.close();
 	}
 	
 	public static class ActionBox implements Response {

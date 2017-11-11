@@ -199,7 +199,7 @@ public final class Card{
 		}
 	}
 	
-	public boolean summonSPCheck() {//just let you know, if the card  is empty, it will return true in this case.		
+	public boolean summonSPCheck() {	
 			String[] s = atSummon.split(" ");					
 			if(!s[0].equals("0") && s[1].equals("spCost")) {
 				int cost = Integer.valueOf(s[2]);
@@ -296,6 +296,11 @@ public final class Card{
 							Match.board[x][y].updateDisplay();
 						}
 					}
+				}
+				else if (s[k].equals("shield")) {
+					shielded = true; 
+					k++; shieldedTurns = Integer.valueOf(s[k]);
+					k++;
 				}
 				
 			}

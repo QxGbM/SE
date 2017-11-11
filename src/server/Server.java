@@ -30,6 +30,9 @@ public final class Server {
 	
 	public static JTextArea serverLog = new JTextArea();
 	
+	public static boolean testmode = false;
+	public static boolean GUI = true;
+	
 	public static final class User {
 		
 		public int ID;
@@ -65,6 +68,8 @@ public final class Server {
 		public ArrayList<Action> ActionBuffer1 = new ArrayList<Action>();
 		public ArrayList<Action> ActionBuffer2 = new ArrayList<Action>();
 		
+		public boolean close = false;
+		
 		public Match(int mid, int p1, int p2) {
 			matchID = mid; player1 = p1; player2 = p2;
 		}
@@ -77,18 +82,8 @@ public final class Server {
 		}
 		
 		public void close() {
-			ActionBuffer1.add(new Action(matchID, player2, "close"));
-			ActionBuffer2.add(new Action(matchID, player1, "close"));
-			
-			new Thread() {
-				@Override
-				public void run() {
-					try {
-						sleep(10000);
-					} catch (InterruptedException e) {e.printStackTrace();}
-					matches.remove(this);
-				}
-			}.start();
+			if(!close) close = true;
+			else matches.remove(this);
 		}
 	}
 	
@@ -142,8 +137,6 @@ public final class Server {
 	
 	public static void readwrite() throws IOException {
 		
-		if(serverLog.getText().length() >= 10000) serverLog.setText("");
-		
 		byte[] b = new byte[1024];
 		receiveDp = new DatagramPacket(b, b.length);
 		ds.receive(receiveDp);
@@ -152,13 +145,18 @@ public final class Server {
 		int clientPort = receiveDp.getPort();
 		byte[] data = receiveDp.getData();
 		int len = receiveDp.getLength();
-		serverLog.append("received: " + new String(data, 0, len) + "\n");
 		
 		String response = parseCommand(new String(data, 0, len)).toString();
 		byte[] bData = response.getBytes();
 		sendDp = new DatagramPacket(bData, bData.length, clientIP, clientPort);
 		ds.send(sendDp);
-		serverLog.append("returned: " + response + "\n\n");
+		
+		if (GUI) updateLog(new String(data, 0, len), response);
+	}
+	
+	public static void updateLog(String receive, String response) {
+		if(serverLog.getText().length() >= 10000) serverLog.setText("");
+		serverLog.append("received: " + receive + "\nreturned: " + response + "\n\n");
 	}
 	
 	public static void main(String args[]) throws IOException {
@@ -166,21 +164,22 @@ public final class Server {
 		ds = new DatagramSocket(port);
 		serverLog.setEditable(false);
 		
-		User server = new User(0, "Server", "", "");
+		for (int i = 0; i < args.length; i++) {
+			if (args[i].equals("-test")) testmode = true;
+			if (args[i].equals("-nogui")) GUI = false;
+		}
+		
 		User tester0 = new User(100, "Tester0", "admin0", "password");
 		User tester1 = new User(101, "Tester1", "admin1", "password");
-		users.add(server);
 		users.add(tester0);
 		users.add(tester1);
 		tester0.friends.add(tester1);
-		tester0.friends.add(server);
 		tester1.friends.add(tester0);
-		tester1.friends.add(server);
 		
 		Match m = new Match(1000, 100, 101);
 		matches.add(m);
 		
-		new Thread() {
+		if (GUI) new Thread() {
 			@Override
 			public void run() {
 				JFrame frame = new JFrame("Server Panel");
@@ -213,7 +212,7 @@ public final class Server {
 			}
 		}.start();
 		
-		new Thread() {
+		if (testmode) new Thread() {
 			@Override
 			public void run() {
 				test.ActionMocker.main(null);

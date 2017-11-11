@@ -532,14 +532,6 @@ public final class Match {
 		opponentSPlabel.setText("Opponent SP: " + opponentSP);
 		if (opponentSP < 0) {
 			opponentSP = 0;
-			markOpponentMonstersInactive();
-		}
-	}
-	
-	public static void markOpponentMonstersInactive() {
-		for (int i = 0; i < opponentOrder.size(); i++) {
-			int x = opponentOrder.get(i)[0], y = opponentOrder.get(i)[1];
-			if (board[x][y].isMonster()) board[x][y].markSPInactive();
 		}
 	}
 	
@@ -554,6 +546,32 @@ public final class Match {
 		opponentVPlabel.setText("Opponent VP: " + opponentVP);
 		opponentVPGenlabel.setText("Opponent VP gen: " + opponentvpGen);
 		if (opponentVP >= 100) lose();
+	}
+	
+	public static void opponentEndTurn() {
+		opponentAftTurn();
+		if(!shell.isDisposed()) {
+			endTurn = false;
+			myPreTurn();
+		}
+	}
+	
+	public static void opponentSkillActivation(Action a) {
+		int x = a.intField1 / 4, y = a.intField1 % 4;
+		if (a.boolField1) {
+			coordinatesTemp[0] = a.intField2 / 4;
+			coordinatesTemp[1] = a.intField2 % 4;
+			board[x][y].spellCheckWithSelectedCoordinates();
+		} else {
+			board[x][y].spellCheck();
+		}
+	}
+	
+	public static void opponentSummon(Action a) {
+		int mID = a.intField1;
+		int[] coordinates = new int[2];
+		coordinates[0] = a.intField2 / 4; coordinates[1] = a.intField2 % 4;
+		summon(Match.findCardByID(mID), coordinates);
 	}
 	
 	public static ArrayList<int[]> selectAllEnemyMonsters() {
@@ -598,9 +616,10 @@ public final class Match {
 		return l;
 	}
 
-	public static void startMatch(int oID, boolean moveFirst) {
+	public static void startMatch(int oID, int mID, boolean moveFirst) {
 		
 		opponentID = oID;
+		matchNum = mID;
 		endTurn = !moveFirst;
 		
 		board = new Card[4][4];
@@ -692,31 +711,4 @@ public final class Match {
 		shell.open();
 
 	}
-	
-	public static void opponentEndTurn() {
-		opponentAftTurn();
-		if(!shell.isDisposed()) {
-			endTurn = false;
-			myPreTurn();
-		}
-	}
-	
-	public static void opponentSkillActivation(Action a) {
-		int x = a.intField1 / 4, y = a.intField1 % 4;
-		if (a.boolField1) {
-			coordinatesTemp[0] = a.intField2 / 4;
-			coordinatesTemp[1] = a.intField2 % 4;
-			board[x][y].spellCheckWithSelectedCoordinates();
-		} else {
-			board[x][y].spellCheck();
-		}
-	}
-	
-	public static void opponentSummon(Action a) {
-		int mID = a.intField1;
-		int[] coordinates = new int[2];
-		coordinates[0] = a.intField2 / 4; coordinates[1] = a.intField2 % 4;
-		summon(Match.findCardByID(mID), coordinates);
-	}
-	
 }
