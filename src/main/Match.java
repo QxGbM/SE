@@ -312,6 +312,7 @@ public final class Match {
 				myHand.get(i).updateDisplay();
 			}
 		}
+		logDisplay.append("Remaining Deck: " + myDeck.size() + " cards.\n");
 	}
 	
 	public static boolean summon(Card m, int[] coordinates) {
@@ -457,12 +458,16 @@ public final class Match {
 	public static void processDestroiedCard(int[] coordinates) {
 		int x = coordinates[0], y = coordinates[1];
 		if (x >= 2) {
-			myDeck.add(board[x][y].clone());
+			int id = board[x][y].getID();
+			if (id != 206)
+				myDeck.add(findCardByID(id).clone());
+			if (board[x][y].isActive()) {
+				spGen -= board[x][y].spGen;
+				vpGen -= board[x][y].vpGen;
+				VPGenlabel.setText("Current VP gen: " + vpGen);
+			}
 			spCost -= board[x][y].spCost;
-			spGen -= board[x][y].spGen;
-			vpGen -= board[x][y].vpGen;
 			SPCostlabel.setText("Current SP cost: " + spCost);
-			SPCostlabel.setText("Current VP gen: " + vpGen);
 			int k = 0;
 			while (k < myOrder.size()) {
 				int i = myOrder.get(k)[0], j = myOrder.get(k)[1];
@@ -471,11 +476,13 @@ public final class Match {
 			}
 		}
 		else {
+			if (board[x][y].isActive()) {
+				opponentspGen -= board[x][y].spGen;
+				opponentvpGen -= board[x][y].vpGen;
+				opponentVPGenlabel.setText("Opponent VP gen: " + opponentvpGen);
+			}
 			opponentspCost -= board[x][y].spCost;
-			opponentspGen -= board[x][y].spGen;
-			opponentvpGen -= board[x][y].vpGen;
 			opponentSPCostlabel.setText("Opponent SP cost: " + opponentspCost);
-			opponentSPCostlabel.setText("Opponent VP gen: " + opponentvpGen);
 			int k = 0;
 			while (k < opponentOrder.size()) {
 				int i = opponentOrder.get(k)[0], j = opponentOrder.get(k)[1];
@@ -498,6 +505,7 @@ public final class Match {
 		if (SP < 0) {
 			SP = 0;
 			markAllyMonstersInactive();
+			logDisplay.append("Insufficient SP, All Ally Monsters cannot cast spell");
 		}
 	}
 	

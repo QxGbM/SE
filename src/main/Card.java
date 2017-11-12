@@ -126,6 +126,10 @@ public final class Card{
 		return identifier >= 200;
 	}
 	
+	public boolean isActive() {
+		return !(hold && turns != 0);
+	}
+	
 	public int getID() {
 		return identifier;
 	}
@@ -164,7 +168,7 @@ public final class Card{
 	}
 	
 	public void preTurnCheck() {
-		if (hold && turns != 0) { 
+		if (!isActive()) { 
 			turns -= 1; 
 			if (turns > 0) {
 				cardName = "Finishing in " + turns;
@@ -200,13 +204,13 @@ public final class Card{
 	}
 	
 	public boolean summonSPCheck() {	
-			String[] s = atSummon.split(" ");					
-			if(!s[0].equals("0") && s[1].equals("spCost")) {
-				int cost = Integer.valueOf(s[2]);
-				if (!Match.endTurn && cost > Match.SP) 
-				{Match.reject("Not enough sp"); return false;}
-			}
-			return true;
+		String[] s = atSummon.split(" ");					
+		if(!s[0].equals("0") && s[1].equals("spCost")) {
+			int cost = Integer.valueOf(s[2]);
+			if (!Match.endTurn && cost > Match.SP) 
+			{Match.reject("Not enough sp"); return false;}
+		}
+		return true;
 	}
 	
 	public void summonCheck() {
@@ -215,14 +219,14 @@ public final class Card{
 		int k = 1;
 		for (int i = 0; i < n; i++) {
 			if (s[k].equals("spCost")) {
-				k++; int cost = Integer.valueOf(s[k]); k++;
+				k++; spCost = Integer.valueOf(s[k]); k++;
 				if (!Match.endTurn)	{
-					Match.SP -= cost; Match.spCost += cost;
+					Match.SP -= spCost; Match.spCost += spCost;
 					Match.SPlabel.setText("Remaining SP: " + Match.SP);
 					Match.SPCostlabel.setText("Current SP cost: " + Match.spCost);
 				}
 				else {
-					Match.opponentSP -= cost; Match.opponentspCost += cost;
+					Match.opponentSP -= spCost; Match.opponentspCost += spCost;
 					Match.opponentSPlabel.setText("Opponent SP: " + Match.opponentSP);
 					Match.opponentSPCostlabel.setText("Opponent SP cost: " + Match.opponentspCost);
 				}
@@ -240,11 +244,11 @@ public final class Card{
 	}
 	
 	public boolean spellCheck() {
-		if (hold) {Match.reject("This card is inactive."); return false;}
+		if (!isActive()) {Match.reject("This card is inactive."); return false;}
 		if (skillUsed) {Match.reject("Skill used"); return false;}
 		String[] s = skillActivate.split(" ");
 		int n = Integer.valueOf(s[0]);
-		if (n == 0) {Match.reject("No skill can be activated"); return false;}//this line is being tested
+		if (n == 0) {Match.reject("No skill can be activated"); return false;}
 		boolean skillRequiresTarget = Boolean.valueOf(s[1]);
 		if (!skillRequiresTarget) {
 			Match.logDisplay.append("Activate Skill\n");
@@ -304,10 +308,12 @@ public final class Card{
 				}
 				
 			}
-			int w = Match.cardSkillActivation[0], z = Match.cardSkillActivation[1];
-			Match.board[w][z].updateDisplay();
-			skillUsed = true;
-			NetClient.sendAction(new Action(Match.matchNum, Game.myID, w, z));
+			if (!Match.endTurn) {
+				int w = Match.cardSkillActivation[0], z = Match.cardSkillActivation[1];
+				Match.board[w][z].updateDisplay();
+				skillUsed = true;
+				NetClient.sendAction(new Action(Match.matchNum, Game.myID, w, z));
+			}
 			return false;
 		}
 		else {
@@ -318,7 +324,7 @@ public final class Card{
 	}
 	
 	public void spellCheckWithSelectedCoordinates() {
-		if (hold) {Match.reject("This card is inactive."); return;}
+		if (!isActive()) {Match.reject("This card is inactive."); return;}
 		if (skillUsed) {Match.reject("Skill used"); return;}
 		String[] s = skillActivate.split(" ");
 		int n = Integer.valueOf(s[0]);
@@ -415,14 +421,16 @@ public final class Card{
 				}
 			}
 		}
-		skillUsed = true;
-		int x = Match.cardSkillActivation[0], y = Match.cardSkillActivation[1];
-		int w = Match.coordinatesTemp[0], z = Match.coordinatesTemp[1];
-		NetClient.sendAction(new Action(Match.matchNum, Game.myID, x, y, w, z));
+		if (!Match.endTurn) {
+			skillUsed = true;
+			int x = Match.cardSkillActivation[0], y = Match.cardSkillActivation[1];
+			int w = Match.coordinatesTemp[0], z = Match.coordinatesTemp[1];
+			NetClient.sendAction(new Action(Match.matchNum, Game.myID, x, y, w, z));
+		}
 	}
 	
 	public void aftTurnCheck(){
-		if (hold && turns != 0) return;
+		if (!isActive()) return;
 		String[] s = afterTurn.split(" ");
 		int n = Integer.valueOf(s[0]);
 		int k = 1;
@@ -470,20 +478,6 @@ public final class Card{
 	public void mpRecover(int n) {
 		if (mp + n > mpMax) mp = mpMax;
 		else mp = mp + n;
-	}
-	
-	public void destroy(int[] coordinates) {
-		if (coordinates[0] >= 2) {
-			Match.myDeck.add(clone());
-			Match.spCost -= spCost;
-			Match.spGen -= spGen;
-			Match.vpGen -= vpGen;
-		}
-		else {
-			Match.opponentspCost -= spCost;
-			Match.opponentspGen -= spGen;
-			Match.opponentvpGen -= vpGen;
-		}
 	}
 	
 	public static ArrayList<Card> cardLoader() {

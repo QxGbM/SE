@@ -50,7 +50,7 @@ public final class Game {
 		Loggedin = true;
 		inMatch = true;
 		myID = 100;
-		new Action("Action 1000 101 start false").clientParse();
+		new Action("Action 1000 100 start false").clientParse();
 		new ActionRetriever(1000).start();
 		
 		while(Loggedin) {
