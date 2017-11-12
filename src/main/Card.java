@@ -362,8 +362,8 @@ public final class Card{
 						Match.board[x][y].setEmpty();
 					} else Match.board[x][y].updateDisplay();
 					
-					if (!Match.endTurn) x = (x == 0)? 1:0;
-					else x = (x == 2)? 3:2;
+					if (!Match.endTurn) coordinates[0] = x = (x == 0)? 1:0;
+					else coordinates[0] = x = (x == 2)? 3:2;
 					
 					if (! Match.board[x][y].isEmpty()) {
 						Match.board[x][y].mpDeduct(mpDmg);
