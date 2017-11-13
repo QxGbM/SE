@@ -339,8 +339,9 @@ public final class Card{
 					k++; updateDisplay();
 				}
 				else if (s[k].equals("single")) {
-					int[] coordinates = Match.coordinatesTemp;
-					int x = coordinates[0], y = coordinates[1];
+					int[] coordinates = new int[2];
+					int x = coordinates[0] = Match.coordinatesTemp[0];
+					int y = coordinates[1] = Match.coordinatesTemp[1];
 					k++; Match.board[x][y].mpDeduct(Integer.valueOf(s[k]));
 					k++; 
 					if (Match.board[x][y].hpDeduct(Integer.valueOf(s[k]))) {
@@ -350,8 +351,9 @@ public final class Card{
 					k++;
 				}
 				else if (s[k].equals("column")) {
-					int[] coordinates = Match.coordinatesTemp;
-					int x = coordinates[0], y = coordinates[1];
+					int[] coordinates = new int[2];
+					int x = coordinates[0] = Match.coordinatesTemp[0];
+					int y = coordinates[1] = Match.coordinatesTemp[1];
 					k++; int mpDmg = Integer.valueOf(s[k]);
 					k++; int hpDmg = Integer.valueOf(s[k]);
 					k++;
@@ -365,7 +367,7 @@ public final class Card{
 					if (!Match.endTurn) coordinates[0] = x = (x == 0)? 1:0;
 					else coordinates[0] = x = (x == 2)? 3:2;
 					
-					if (! Match.board[x][y].isEmpty()) {
+					if (!Match.board[x][y].isEmpty()) {
 						Match.board[x][y].mpDeduct(mpDmg);
 						if (Match.board[x][y].hpDeduct(hpDmg)) {
 							Match.processDestroiedCard(coordinates);
@@ -415,7 +417,9 @@ public final class Card{
 			else if (s[k].equals("summon")) {
 				k++; int cardID = Integer.valueOf(s[k]); k++;
 				Card c = Match.findCardByID(cardID);
-				int[] coordinates = Match.coordinatesTemp;
+				int[] coordinates = new int[2];
+				coordinates[0] = Match.coordinatesTemp[0];
+				coordinates[1] = Match.coordinatesTemp[1];
 				if(Match.summon (c, coordinates)) {
 					Match.logDisplay.append("Monster Summoned\n");
 				}
@@ -429,7 +433,7 @@ public final class Card{
 		}
 	}
 	
-	public void aftTurnCheck(){
+	public void aftTurnCheck() {
 		if (!isActive()) return;
 		String[] s = afterTurn.split(" ");
 		int n = Integer.valueOf(s[0]);

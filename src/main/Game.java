@@ -36,7 +36,6 @@ public final class Game {
 		NetClient.startNetClient();
 		/*LoginWindow.main();
 		
-		MainWindow.friends.add(new MainWindow.Friend(0, "server", true, "Chatting with server:\n"));
 		MainWindow.friends.add(new MainWindow.Friend(100, "Tester0", true, ""));
 		
 		display.syncExec(new Runnable() {
@@ -50,7 +49,7 @@ public final class Game {
 		Loggedin = true;
 		inMatch = true;
 		myID = 100;
-		new Action("Action 1000 100 start false").clientParse();
+		new Action("Action 1000 101 start true").clientParse();
 		new ActionRetriever(1000).start();
 		
 		while(Loggedin) {

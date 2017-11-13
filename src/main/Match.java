@@ -322,7 +322,7 @@ public final class Match {
 			board[x][y].updateImage(m.getImage());
 			board[x][y].summonCheck();
 			board[x][y].updateDisplay();
-			if (!endTurn)
+			if (x >= 2)
 				Match.myOrder.add(coordinates);
 			else
 				Match.opponentOrder.add(coordinates);
@@ -519,8 +519,8 @@ public final class Match {
 	public static void myAftTurn() {
 		vpGen = 0;
 		for (int i = 0; i < myOrder.size(); i++) {
-			int[] cordinates = myOrder.get(i);
-			int x = cordinates[0], y = cordinates[1];
+			int[] coordinates = myOrder.get(i);
+			int x = coordinates[0], y = coordinates[1];
 			board[x][y].aftTurnCheck();
 		}
 		VP = VP + vpGen;
@@ -546,8 +546,8 @@ public final class Match {
 	public static void opponentAftTurn() {
 		opponentvpGen = 0;
 		for (int i = 0; i < opponentOrder.size(); i++) {
-			int[] cordinates = opponentOrder.get(i);
-			int x = cordinates[0], y = cordinates[1];
+			int[] coordinates = opponentOrder.get(i);
+			int x = coordinates[0], y = coordinates[1];
 			board[x][y].aftTurnCheck();
 		}
 		opponentVP = opponentVP + opponentvpGen;
