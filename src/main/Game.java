@@ -1,17 +1,24 @@
 package main;
 
+import java.awt.*;
+import java.awt.event.*;
+
+import javax.swing.*;
+
 import org.eclipse.swt.widgets.Display;
 
 import protocol.*;
+import protocol.Action.ActionBox;
 
 public final class Game {
 	
 	public static Display display = new Display();
 	
-	public final static String ServerIP = "localhost";
-	public final static int Port = 10010;
+	public static final String ServerIP = "localhost";
+	public static final int Port = 10010;
 	
 	public static boolean Loggedin = false;
+	public static boolean Logout = false;
 	public static int myID = -1;
 	public static String myNickname = "";
 	
@@ -31,38 +38,114 @@ public final class Game {
 		}
 		return null;
 	}
+	
+	public static void openLoginWindow() {
+		
+		JFrame frame = new JFrame("Login Window");
+		JPanel panel = new JPanel(new GridBagLayout());
+		JLabel usernameLabel = new JLabel("Username:");
+		JLabel passwordLabel = new JLabel("Password:");
+		JTextField usernameField = new JTextField();
+		JPasswordField passwordField = new JPasswordField();
+		JButton login = new JButton("Login");
+		
+		panel.setBackground(new Color(0, 100, 255));
 
-	public static void main(String[] args) {
-		NetClient.startNetClient();
-		/*LoginWindow.main();
-		
-		MainWindow.friends.add(new MainWindow.Friend(100, "Tester0", true, ""));
-		
-		display.syncExec(new Runnable() {
+		login.addActionListener(new ActionListener () {
 			@Override
-			public void run() {
-				new MainWindow(myNickname);
+			public void actionPerformed(ActionEvent e) {  
+				if(usernameField.getText().length() == 0 || passwordField.getPassword().length == 0) {
+					JOptionPane.showMessageDialog(frame, "Incomplete Fields");
+					usernameField.setText("");
+					passwordField.setText("");
+					return;
+				}
+				String username = usernameField.getText();
+				String password = new String(passwordField.getPassword());
+				NetClient.sendLogin(username, password);
+				usernameField.setText("");
+				passwordField.setText("");
+				if (Game.Loggedin) {
+					frame.removeAll(); 
+					frame.setVisible(false);
+				}
 			}
 		});
 		
-		new MessageRetriever().start();*/
-		Loggedin = true;
-		inMatch = true;
-		myID = 100;
-		new Action("Action 1000 101 start true").clientParse();
-		new ActionRetriever(1000).start();
+		frame.addWindowListener(new WindowAdapter () {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				if (JOptionPane.showConfirmDialog(frame, "Exit?") == 1)
+					System.exit(0);
+			}
+		});
 		
-		while(Loggedin) {
-			if (!display.readAndDispatch()) display.sleep();
+		usernameLabel.setBorder(BorderFactory.createEmptyBorder());
+		usernameLabel.setBackground(new Color(0, 100, 255));
+		passwordLabel.setBorder(BorderFactory.createEmptyBorder());
+		passwordLabel.setBackground(new Color(0, 100, 255));
+    
+		GridBagConstraints constraints = new GridBagConstraints();
+		constraints.fill = GridBagConstraints.HORIZONTAL;
+		constraints.gridx = 0;
+		constraints.gridy = 0;
+		constraints.gridheight = 2;
+		constraints.gridwidth = 1;
+		panel.add(usernameLabel, constraints);
+    
+		constraints.gridy = 2;
+		constraints.gridheight = 1;
+		constraints.gridwidth = 5;
+		panel.add(usernameField, constraints);
+    
+		constraints.gridy = 3;
+		constraints.gridheight = 2;
+		constraints.gridwidth = 1;
+		panel.add(passwordLabel, constraints);
+    
+		constraints.gridy = 5;
+		constraints.gridheight = 1;
+		constraints.gridwidth = 3;
+		panel.add(passwordField, constraints);
+    
+		constraints = new GridBagConstraints();
+		constraints.anchor = GridBagConstraints.LINE_END;
+		constraints.gridx = 2;
+		constraints.gridy = 6;
+		constraints.gridwidth = 1;
+		panel.add(login, constraints);
+    
+		frame.add(panel);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setSize(500, 400);
+		frame.setLocation(0, 0);
+		frame.setVisible(true);
+
+		while(!Loggedin) {
+			try {Thread.sleep(1);} 
+			catch (InterruptedException e) {e.printStackTrace();}
 		}
+		new MainWindow(myNickname);
+		new MessageRetriever().start();
+	}
+
+	public static void main(String[] args) {
+		NetClient.startNetClient();
 		
-		display.dispose();
+		MainWindow.friends.add(new MainWindow.Friend(101, "Tester1", true, ""));
+		new Message(101, 100, 1000).clientParse();
+		
+		openLoginWindow();
+		
+		while (Loggedin)
+			if (!display.readAndDispatch()) display.sleep();
+		
+		display.close();
 		NetClient.close();
-		
 	}
 	
 	public final static class MessageRetriever extends Thread {
-		
+		@Override
 		public void run () {
 			while (Loggedin) {
 				try {
@@ -84,6 +167,7 @@ public final class Game {
 			matchNum = n;
 		}
 		
+		@Override
 		public void run () {
 			while (inMatch) {
 				try {
@@ -91,7 +175,7 @@ public final class Game {
 				} catch (InterruptedException e) {e.printStackTrace();}
 				Retrieve r = new Retrieve(matchNum, myID);
 				NetClient.send(r.toString());
-				Action.ActionBox ab = new Action.ActionBox(NetClient.get());
+				ActionBox ab = new ActionBox(NetClient.get());
 				display.syncExec(new Runnable () {
 					@Override
 					public void run(){

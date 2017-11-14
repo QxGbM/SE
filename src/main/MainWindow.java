@@ -2,10 +2,10 @@ package main;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.Date;
+import java.util.*;
 
-import javax.swing.*;  
+import javax.swing.*;
+import javax.swing.border.*;  
 
 public class MainWindow {
 	
@@ -20,14 +20,14 @@ public class MainWindow {
 	public static int[] deck = {101,101,102,102,103,103,104,105,201,201,202,202,203,204,205};
 	public static boolean deckIsReady = true;
 	
-	public boolean loadMainPanel() {
+	public void loadMainPanel() {
 		
-		JPanel mainPanel = new JPanel(new GridBagLayout());
-		JLabel nickname = new JLabel(myNickname);
-		JButton quickmatch = new JButton("Find Quickmatch");
-		JButton viewFriends =new JButton("View My Friends");
-		JButton viewCards = new JButton("View My Cards");
-		JButton logout = new JButton("Logout");
+		JPanel mainPanel = new JPanel (new GridBagLayout());
+		JLabel nickname = new JLabel (myNickname);
+		JButton quickmatch = new JButton ("Find Quickmatch");
+		JButton viewFriends =new JButton ("View My Friends");
+		JButton viewCards = new JButton ("View My Cards");
+		JButton exit = new JButton ("Exit");
 		
 		quickmatch.addActionListener(new ActionListener() {
 			@Override
@@ -51,14 +51,14 @@ public class MainWindow {
   			}
   		});
 		
-		logout.addActionListener(new ActionListener() {
+		exit.addActionListener(new ActionListener() {
   			@Override
   			public void actionPerformed(ActionEvent e) {
-  				Game.Loggedin = false;
-  				mainwindow.dispose();
-  				LoginWindow.main();
+  				System.exit(0);
   			}
   		});
+		
+		mainPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 		
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.fill = GridBagConstraints.BOTH;
@@ -78,12 +78,11 @@ public class MainWindow {
 		mainPanel.add(viewCards, constraints);
 		
 		constraints.gridy = 4;
-		mainPanel.add(logout, constraints);
+		mainPanel.add(exit, constraints);
 		
 		mainwindow.removeAll();
 		mainwindow.add(mainPanel);
 		mainwindow.pack();
-		return mainwindow.isShowing();
 	}
 	
 	public final static ArrayList<Friend> friends = new ArrayList<Friend>();
@@ -101,7 +100,7 @@ public class MainWindow {
 		public JLabel status;
 		public JTextField display;
 		
-		public ChatWindow window = null;
+		public ChatWindow window;
 		
 		public Friend(int id, String nickname, boolean online, String message) {
 			ID = id; Nickname = nickname; Online = online; Message = message;
@@ -146,7 +145,10 @@ public class MainWindow {
 			Game.display.syncExec(new Runnable() {
 				@Override
 				public void run(){
-					window = new ChatWindow(ID, Nickname);
+					if (window == null || window.isDisposed())
+						window = new ChatWindow(ID, Nickname);
+					else
+						window.forceActive();
 				}
 			});
 		}
@@ -166,11 +168,9 @@ public class MainWindow {
 		public void requestBattle() {
 			if (!deckIsReady) {
 				JOptionPane.showMessageDialog(mainwindow, "Deck is not complete");
-				return;
 			}
 			else if (!Online) {
 				JOptionPane.showMessageDialog(mainwindow, "Friend is Offline");
-				return;
 			}
 			else NetClient.sendBattleRequest(ID);
 		}
@@ -189,7 +189,8 @@ public class MainWindow {
 			Friend f = friends.get(i);
 			
 			GridBagConstraints constraints = new GridBagConstraints();
-			constraints.fill = GridBagConstraints.BOTH;
+			constraints.fill = GridBagConstraints.HORIZONTAL;
+			constraints.anchor = GridBagConstraints.NORTH;
 			constraints.weightx = 1;
 			constraints.weighty = 1;
 			constraints.gridx = 0;
@@ -207,7 +208,6 @@ public class MainWindow {
 			public void actionPerformed(ActionEvent e) {
 				if (selectedFriendID != -1) {
 					Game.findFriend(selectedFriendID).startChat();
-					selectedFriendID = -1;
 				}
 				else
 					JOptionPane.showMessageDialog(viewMyFriends, "No Friend Selected");
@@ -219,7 +219,6 @@ public class MainWindow {
 			public void actionPerformed(ActionEvent e) {
 				if (selectedFriendID != -1) {
 					Game.findFriend(selectedFriendID).requestBattle();
-					selectedFriendID = -1;
 				}
 				else
 					JOptionPane.showMessageDialog(viewMyFriends, "No Friend Selected");
@@ -250,18 +249,18 @@ public class MainWindow {
 		constraints.gridy = 2;
 		viewMyFriends.add(back, constraints);
 		
-		for (int i = 0; i < friends.size(); i++) {
-			Friend f = friends.get(i);
-			if (f.BattleRequest) {
-				int confirm = JOptionPane.showConfirmDialog(mainwindow, "Battle With " + f.Nickname + "?");
-				if (confirm == 0) {
-					NetClient.sendBattleAccept(f.matchNum, true);
-				}
-				else {
-					NetClient.sendBattleAccept(f.matchNum, false);
+		if (!Game.inMatch && deckIsReady)
+			for (int i = 0; i < friends.size(); i++) {
+				Friend f = friends.get(i);
+				if (f.BattleRequest) {
+					f.BattleRequest = false;
+					int confirm = JOptionPane.showConfirmDialog(mainwindow, "Battle With " + f.Nickname + "?");
+					if (confirm == 0)
+						NetClient.sendBattleAccept(f.matchNum, true);
+					else
+						NetClient.sendBattleAccept(f.matchNum, false);
 				}
 			}
-		}
 		
 		mainwindow.removeAll();
 		mainwindow.add(viewMyFriends);
@@ -425,7 +424,7 @@ public class MainWindow {
 		mainwindow.pack();
 	}
   	
-	public MainWindow(String myNickname){
+	public MainWindow (String myNickname) {
 	  
   		mainwindow.addWindowListener( new WindowAdapter() {
   			@Override 
@@ -445,6 +444,5 @@ public class MainWindow {
   		MainWindow.myNickname = myNickname;
   		loadMainPanel();
   		mainwindow.setVisible(true);
-  		
   	}
 }

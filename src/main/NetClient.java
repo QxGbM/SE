@@ -2,7 +2,6 @@ package main;
 
 import java.io.*;
 import java.net.*;
-import java.util.Date;
 
 import javax.swing.JOptionPane;
 
@@ -30,7 +29,6 @@ public final class NetClient {
 	
 	public static void sendMessage(String message, int recipient) {
 		Message m = new Message(Game.myID, recipient, message);
-		Game.findFriend(recipient).appendMyMessage(message, new Date());
 		send(m.toString());
 		String response = get();
 		new ACK(response).clientParse();

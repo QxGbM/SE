@@ -29,17 +29,6 @@ public class MainPackageTester {
   
 		assertTrue(test.mpDeduct(0));
 
-  
 	}
- 
-	@Test 
-	public void testMainWindow() {
-		MainWindow test = new MainWindow("tester");
-	 
-		assertEquals(true, test.loadMainPanel());
-	 
-	}
- 
- 
  
 }

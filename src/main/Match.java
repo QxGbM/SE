@@ -78,7 +78,7 @@ public final class Match {
 		MessageBox dialog = new MessageBox(shell, SWT.OK | SWT.ICON_INFORMATION);
 		dialog.setText("Notification");
 		dialog.setMessage("You Won!");
-		if (dialog.open() != SWT.OK) return;
+		dialog.open();
 		shell.dispose();
 		Game.inMatch = false;
 	}
@@ -88,7 +88,7 @@ public final class Match {
 		MessageBox dialog = new MessageBox(shell, SWT.OK | SWT.ICON_INFORMATION);
 		dialog.setText("Notification");
 		dialog.setMessage("You Lost!");
-		if (dialog.open() != SWT.OK) return;
+		dialog.open();
 		shell.dispose();
 		Game.inMatch = false;
 	}
@@ -140,12 +140,12 @@ public final class Match {
 		
 		surrender.setText("Surrender");
 		Listener surrenderListener = e -> {
-			NetClient.sendAction(new Action(matchNum, Game.myID, "surrender"));
 			MessageBox dialog = new MessageBox(shell, SWT.OK | SWT.CANCEL | SWT.ICON_QUESTION);
 			dialog.setText("Surrender Confirmation");
 			dialog.setMessage("Surrender?");
 			if (e.type == SWT.Close) e.doit = false;
 			if (dialog.open() != SWT.OK) return;
+			NetClient.sendAction(new Action(matchNum, Game.myID, "surrender"));
 			lose();
 		};
 		surrender.addListener(SWT.Selection, surrenderListener);
@@ -172,6 +172,10 @@ public final class Match {
 		cancel.addListener(SWT.Selection, cancelListener);
 		
 		startChat.setText("Start Chat");
+		Listener startChatListener = e -> {
+			Game.findFriend(opponentID).startChat();
+		};
+		startChat.addListener(SWT.Selection, startChatListener);
 		
 		SPlabel = new Label(fb, SWT.CENTER);
 		SPlabel.setText("Remaining SP: " + SP);

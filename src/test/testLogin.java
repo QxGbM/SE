@@ -6,7 +6,6 @@ import org.junit.Test;
 
 public class testLogin {
 
-
 	@Test
 	public final void testActionPerformed() {
 		assertTrue(true); // TODO
