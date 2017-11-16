@@ -2,6 +2,7 @@ package main;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
 
 import javax.swing.*;
 
@@ -129,6 +130,16 @@ public final class Game {
 	}
 
 	public static void main(String[] args) {
+		new Thread() {
+			@Override
+			public void run() {
+				try {
+					server.Server.main("-test".split(" "));
+				} catch (IOException e) {e.printStackTrace();}
+			}
+		}.start();
+			
+
 		NetClient.startNetClient();
 		
 		MainWindow.friends.add(new MainWindow.Friend(100, "Tester0", true, ""));
