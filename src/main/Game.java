@@ -18,7 +18,6 @@ public final class Game {
 	public static final int Port = 10010;
 	
 	public static boolean Loggedin = false;
-	public static boolean Logout = false;
 	public static int myID = -1;
 	public static String myNickname = "";
 	
@@ -132,8 +131,7 @@ public final class Game {
 	public static void main(String[] args) {
 		NetClient.startNetClient();
 		
-		MainWindow.friends.add(new MainWindow.Friend(101, "Tester1", true, ""));
-		new Message(101, 100, 1000).clientParse();
+		MainWindow.friends.add(new MainWindow.Friend(100, "Tester0", true, ""));
 		
 		openLoginWindow();
 		

@@ -4,22 +4,20 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-public class testMainWindow {
+public class testMatchMaking {
 
 	@Test
-	public final void testLoadMainPanel() {
+	public final void test1_0() {
 		assertTrue(true); // TODO
 	}
 
 	@Test
-	public final void testLoadFriendPanel() {
+	public final void test2_0() {
 		assertTrue(true); // TODO
 	}
-
+	
 	@Test
-	public final void testLoadCardPanel() {
+	public final void test3_0() {
 		assertTrue(true); // TODO
 	}
-
-
 }

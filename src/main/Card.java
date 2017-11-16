@@ -206,8 +206,8 @@ public final class Card{
 	public boolean summonSPCheck() {	
 		String[] s = atSummon.split(" ");					
 		if(!s[0].equals("0") && s[1].equals("spCost")) {
-			int cost = Integer.valueOf(s[2]);
-			if (!Match.endTurn && cost > Match.SP) 
+			spCost = Integer.valueOf(s[2]);
+			if (!Match.endTurn && spCost > Match.SP) 
 			{Match.reject("Not enough sp"); return false;}
 		}
 		return true;
@@ -251,7 +251,6 @@ public final class Card{
 		if (n == 0) {Match.reject("No skill can be activated"); return false;}
 		boolean skillRequiresTarget = Boolean.valueOf(s[1]);
 		if (!skillRequiresTarget) {
-			Match.logDisplay.append("Activate Skill\n");
 			int k = 2;
 			for (int i = 0; i < n; i++) {
 				if (s[k].equals("damage")) {
@@ -309,6 +308,7 @@ public final class Card{
 				
 			}
 			if (!Match.endTurn) {
+				Match.logDisplay.append("Activate Skill\n");
 				int w = Match.cardSkillActivation[0], z = Match.cardSkillActivation[1];
 				Match.board[w][z].updateDisplay();
 				skillUsed = true;
