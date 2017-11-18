@@ -130,6 +130,7 @@ public final class Game {
 	}
 
 	public static void main(String[] args) {
+		
 		new Thread() {
 			@Override
 			public void run() {
@@ -142,7 +143,9 @@ public final class Game {
 
 		NetClient.startNetClient();
 		
-		MainWindow.friends.add(new MainWindow.Friend(100, "Tester0", true, ""));
+		MainWindow.friends.add(new MainWindow.Friend(101, "Tester1", true, ""));
+		
+		new Message(101, 100, 1000).clientParse();
 		
 		openLoginWindow();
 		

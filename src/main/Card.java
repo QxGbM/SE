@@ -184,6 +184,7 @@ public final class Card{
 					image = javax.imageio.ImageIO.read(imgFile);
 				} catch (IOException e) {e.printStackTrace();}
 				updateDisplay();
+				Match.logDisplay.append(cardName + " has finished building.\n");
 			}
 		}
 		if (shielded && shieldedTurns >= 1)  
@@ -199,6 +200,7 @@ public final class Card{
 				else 
 					Match.opponentspGen += spGen; 
 				k++;
+				Match.logDisplay.append(cardName + " is providing: " + spGen + "pts of SP.\n");
 			}
 		}
 	}
@@ -224,11 +226,13 @@ public final class Card{
 					Match.SP -= spCost; Match.spCost += spCost;
 					Match.SPlabel.setText("Remaining SP: " + Match.SP);
 					Match.SPCostlabel.setText("Current SP cost: " + Match.spCost);
+					Match.logDisplay.append(cardName + " cost " + spCost + "pts of SP.\n");
 				}
 				else {
 					Match.opponentSP -= spCost; Match.opponentspCost += spCost;
 					Match.opponentSPlabel.setText("Opponent SP: " + Match.opponentSP);
 					Match.opponentSPCostlabel.setText("Opponent SP cost: " + Match.opponentspCost);
+					Match.logDisplay.append(cardName + " cost " + spCost + "pts of SP.\n");
 				}
 			}
 			else if (s[k].equals("buildUnf")) {
@@ -239,6 +243,7 @@ public final class Card{
 				try {
 					image = javax.imageio.ImageIO.read(imgFile);
 				} catch (IOException e) {e.printStackTrace();}
+				Match.logDisplay.append("A Building Finishing in: " + turns + " turns.\n");
 			}
 		}
 	}
@@ -252,6 +257,7 @@ public final class Card{
 		boolean skillRequiresTarget = Boolean.valueOf(s[1]);
 		if (!skillRequiresTarget) {
 			int k = 2;
+			Match.logDisplay.append(cardName + " activates its skill:\n");
 			for (int i = 0; i < n; i++) {
 				if (s[k].equals("damage")) {
 					k++;
@@ -305,10 +311,8 @@ public final class Card{
 					k++; shieldedTurns = Integer.valueOf(s[k]);
 					k++;
 				}
-				
 			}
 			if (!Match.endTurn) {
-				Match.logDisplay.append("Activate Skill\n");
 				int w = Match.cardSkillActivation[0], z = Match.cardSkillActivation[1];
 				Match.board[w][z].updateDisplay();
 				skillUsed = true;
@@ -324,16 +328,16 @@ public final class Card{
 	}
 	
 	public void spellCheckWithSelectedCoordinates() {
-		if (!isActive()) {Match.reject("This card is inactive."); return;}
-		if (skillUsed) {Match.reject("Skill used"); return;}
+		if (!isActive()) {Match.reject("This Card is Inactive."); return;}
+		if (skillUsed) {Match.reject("Skill Already Used."); return;}
 		String[] s = skillActivate.split(" ");
 		int n = Integer.valueOf(s[0]);
-		Match.logDisplay.append("Activate Skill\n");
+		Match.logDisplay.append(cardName + " activates its skill:\n");
 		int k = 3;
 		for (int i = 0; i < n; i++) {
 			if (s[k].equals("damage")) {
 				k++;
-				if (s[k].equals("self")) { 
+				if (s[k].equals("self")) {
 					k++; if (!mpDeduct(Integer.valueOf(s[k]))) return;
 					k++; hpDeduct(Integer.valueOf(s[k]));
 					k++; updateDisplay();
@@ -420,7 +424,7 @@ public final class Card{
 				int[] coordinates = new int[2];
 				coordinates[0] = Match.coordinatesTemp[0];
 				coordinates[1] = Match.coordinatesTemp[1];
-				if(Match.summon (c, coordinates)) {
+				if(Match.summon(c, coordinates)) {
 					Match.logDisplay.append("Monster Summoned\n");
 				}
 			}
@@ -440,9 +444,10 @@ public final class Card{
 		int k = 1;
 		for (int i = 0; i < n; i++) {
 			if (s[k].equals("vpGen")) {
-				k++; vpGen = Integer.valueOf(s[k]); 
+				k++; vpGen = Integer.valueOf(s[k]);
+				Match.logDisplay.append(cardName + " provides:" + vpGen + "pts of VP.\n");
 				if (!Match.endTurn) {
-					Match.vpGen += vpGen; 
+					Match.vpGen += vpGen;
 				}
 				else {
 					Match.opponentvpGen += vpGen;
@@ -462,24 +467,39 @@ public final class Card{
 	}
 
 	public boolean hpDeduct(int n) {
-		if (shielded) hp--; else hp = hp - n;
-		if (hp <= 0) return true;
+		if (n == 0) return false;
+		Match.logDisplay.append(cardName + " takes " + n + " damage.\n");
+		if (shielded) {
+			hp--; Match.logDisplay.append("This monster is shielded, damage reduce to 1.\n");
+		}
+		else hp = hp - n;
+		if (hp <= 0) {
+			Match.logDisplay.append(cardName + " is dead.\n");
+			return true;
+		}
 		else return false;
 	}
 	
 	public void hpRecover(int n) {
+		if (n != 0) Match.logDisplay.append(cardName + " recovers for " + n + " HP.\n");
 		if (hp + n > hpMax) hp = hpMax;
 		else hp = hp + n;
 	}
 	
 	public boolean mpDeduct(int n) {
-		if (!Match.endTurn && mp - n < 0) {Match.reject("Not enough Mana"); return false;}
-		if (Match.endTurn && mp - n < 0) mp = 0;
-		else mp = mp - n;
-		return true;
+		if (!Match.endTurn && mp - n < 0) {
+			Match.reject("Not enough Mana"); 
+			return false;
+		}
+		else {
+			mp = mp - n;
+			if (n != 0) Match.logDisplay.append(cardName + " uses " + n + " mana.\n");
+			return true;
+		}
 	}
 	
 	public void mpRecover(int n) {
+		if (n != 0)Match.logDisplay.append(cardName + " recovers " + n + " mana.\n");
 		if (mp + n > mpMax) mp = mpMax;
 		else mp = mp + n;
 	}
@@ -570,5 +590,4 @@ public final class Card{
 		icon.setImage(image.getScaledInstance(100, 100, Image.SCALE_FAST));
 		Imglabel.setIcon(icon);
 	}
-	
 }

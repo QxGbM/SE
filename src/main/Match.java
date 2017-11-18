@@ -378,7 +378,7 @@ public final class Match {
 					}
 					else reject("An empty slot is required.");
 				}
-				else reject("Cannot target your allies");
+				else reject("Cannot target your allies.");
 			}
 			else if (selectedSummon) {
 				if (!board[i][j].isEmpty()) reject("Cannot summon to a occupied space");
@@ -389,7 +389,7 @@ public final class Match {
 						NetClient.sendAction(new Action(matchNum, Game.myID, myHand.get(cardSummon).getID(), i, j));
 						myHand.get(cardSummon).setEmpty();
 						selectedSummon = false;
-						logDisplay.append("Summon to: (" + i + ", " + j + ")\n");
+						logDisplay.append("Summon to: (" + i + ", " + j + ").\n");
 					}
 				}
 			}
@@ -441,7 +441,6 @@ public final class Match {
 		logDisplay.setText("Battle Start!\n");
 		javax.swing.JScrollPane panel = new javax.swing.JScrollPane(logDisplay);
 		TextFrame.add(panel);
-		
 		bl.pack();
 		return bl;
 	}
@@ -456,7 +455,7 @@ public final class Match {
 		for (int i = 0; i < cardList.size(); i++){
 			if (cardList.get(i).matchID(id)) return cardList.get(i).clone();
 		}
-		return null;
+		return new Card();
 	}
 	
 	public static void processDestroiedCard(int[] coordinates) {
@@ -499,6 +498,10 @@ public final class Match {
 	public static void myPreTurn() {
 		spGen = 0;
 		fillMyHand();
+		MessageBox dialog = new MessageBox(shell, SWT.OK | SWT.ICON_INFORMATION);
+		dialog.setText("Notification");
+		dialog.setMessage("It's Your Turn To Move!");
+		dialog.open();
 		for (int i = 0; i < myOrder.size(); i++) {
 			int[] coordinates = myOrder.get(i);
 			int x = coordinates[0], y = coordinates[1];
