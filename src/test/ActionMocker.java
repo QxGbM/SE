@@ -27,6 +27,7 @@ public class ActionMocker {
 		combobox.addItem("summon");
 		combobox.addItem("skill");
 		combobox.addItem("surrender");
+		combobox.addItem("custom");
 		
 		JTextArea textarea = new JTextArea();
 		JButton send = new JButton("send");
@@ -45,13 +46,19 @@ public class ActionMocker {
 					textarea.setText("<Location> <Requires Target?> <(Optional) Target>");
 				if(combobox.getSelectedItem().equals("surrender"))
 					textarea.setText("");
+				else
+					textarea.setText("");
 			}
 		});
 		
 		send.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				String s = "Action " + MatchNum + " " + playerID + " " + combobox.getSelectedItem() + " " + textarea.getText();
+				String s;
+				if (combobox.getSelectedItem().equals("custom"))
+					s = textarea.getText();
+				else
+					s = "Action " + MatchNum + " " + playerID + " " + combobox.getSelectedItem() + " " + textarea.getText();
 				textarea.setText("");
 				NetClient.send(s);
 				label.setText(NetClient.get());

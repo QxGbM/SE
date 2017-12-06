@@ -139,13 +139,8 @@ public final class Game {
 				} catch (IOException e) {e.printStackTrace();}
 			}
 		}.start();
-			
 
 		NetClient.startNetClient();
-		
-		MainWindow.friends.add(new MainWindow.Friend(101, "Tester1", true, ""));
-		
-		new Message(101, 100, 1000).clientParse();
 		
 		openLoginWindow();
 		

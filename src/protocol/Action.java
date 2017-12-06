@@ -2,6 +2,8 @@ package protocol;
 
 import java.util.ArrayList;
 
+import javax.swing.JOptionPane;
+
 import server.Server;
 import server.Server.Match;
 
@@ -106,6 +108,7 @@ public class Action implements Request, Response {
 		}
 		else if (actionType.equals("close")) {
 			main.Game.inMatch = false;
+			JOptionPane.showMessageDialog(null, "Your opponent Left");
 		}
 		
 	}

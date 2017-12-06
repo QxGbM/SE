@@ -42,7 +42,6 @@ public final class Server {
 		private String password;
 		
 		public boolean Online = false;
-		public ArrayList<User> friends = new ArrayList<User>();
 		public ArrayList<Message> MessageBuffer = new ArrayList<Message>();
 		
 		public User(int id, String nickname, String un, String pw) {
@@ -88,7 +87,10 @@ public final class Server {
 	}
 	
 	public static final ArrayList<User> users = new ArrayList<User>();
+	
 	public static final ArrayList<Match> matches = new ArrayList<Match>();
+	
+	public static final ArrayList<Integer> queue = new ArrayList<Integer>();
 	
 	public static User findUser(int id) {
 		for (int i = 0; i < users.size(); i++){
@@ -132,6 +134,10 @@ public final class Server {
 			r.serverProcess();
 			return r.retrievalResult;
 		}
+		else if (args[0].equals("Quickmatch")) {
+			new QuickMatch(s).serverProcess();
+			return new ACK();
+		}
 		else return new ACK("ERR Command Unknown");
 	}
 	
@@ -155,6 +161,8 @@ public final class Server {
 	}
 	
 	public static void updateLog(String receive, String response) {
+		if (response.endsWith("0") && response.length() >= 9 &&(response.substring(0, 9).equals("ActionBox") || response.substring(0, 10).equals("MessageBox")))
+			return;
 		if(serverLog.getText().length() >= 10000) serverLog.setText("");
 		serverLog.append("received: " + receive + "\nreturned: " + response + "\n\n");
 	}
@@ -173,11 +181,28 @@ public final class Server {
 		User tester1 = new User(101, "Tester1", "admin1", "password");
 		users.add(tester0);
 		users.add(tester1);
-		tester0.friends.add(tester1);
-		tester1.friends.add(tester0);
 		
-		Match m = new Match(1000, 100, 101);
-		matches.add(m);
+		new Thread() {
+			@Override
+			public void run() {
+				while(true) {
+					if (queue.size() >= 2) {
+						int player1 = queue.remove(0).intValue();
+						int player2 = queue.remove(0).intValue();
+						int matchID = createMatch(player1, player2);
+						User user1 = findUser(player1);
+						User user2 = findUser(player2);
+						user1.MessageBuffer.add(new Message(player2, player1, matchID, user2.Nickname));
+						user2.MessageBuffer.add(new Message(player1, player2, matchID, user1.Nickname));
+					}
+					try {
+						sleep(500);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}.start();
 		
 		if (GUI) new Thread() {
 			@Override

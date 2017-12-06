@@ -5,13 +5,14 @@ import java.awt.event.*;
 import java.util.*;
 
 import javax.swing.*;
-import javax.swing.border.*;  
+import javax.swing.border.*;
+
+import protocol.QuickMatch;
 
 public class MainWindow {
 	
 	public static Frame mainwindow = new Frame("Main Window");
 	
-	public static int selectedFriendID = -1;
 	public static String myNickname = "";
 	
 	public static int cardN = 15;
@@ -32,8 +33,8 @@ public class MainWindow {
 		quickmatch.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				//TODO Implementation
-				JOptionPane.showMessageDialog(mainwindow, "Coming Soon");
+				NetClient.sendQuickMatch(new QuickMatch(Game.myID, true));
+				loadQuickMatchPanel();
 			}
 		});
 		
@@ -85,6 +86,51 @@ public class MainWindow {
 		mainwindow.pack();
 	}
 	
+	public void loadQuickMatchPanel() {
+		JPanel panel = new JPanel(new GridBagLayout());
+		JLabel time = new JLabel("0:0");
+		JButton back = new JButton("Back");
+		
+		back.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				NetClient.sendQuickMatch(new QuickMatch(Game.myID, false));
+				loadMainPanel();
+			}
+		});
+		
+		new Thread() {
+			@Override
+			public void run() {
+				int seconds = 0, minutes = 0;
+				while (!Game.inMatch) {
+					try {
+						sleep(1000);
+					} catch (InterruptedException e) {e.printStackTrace();}
+					seconds++;
+					if (seconds == 60) {seconds = 0; minutes++;}
+					time.setText(minutes + ":" + seconds);
+				}
+				loadMainPanel();
+			}
+		}.start();
+		
+		GridBagConstraints constraints = new GridBagConstraints();
+		constraints.fill = GridBagConstraints.BOTH;
+		constraints.weightx = 1;
+		constraints.weighty = 1;
+		constraints.gridx = 0;
+		constraints.gridy = 0;
+		panel.add(time, constraints);
+		
+		constraints.gridy = 1;
+		panel.add(back, constraints);
+		
+		mainwindow.removeAll();
+		mainwindow.add(panel);
+		mainwindow.pack();
+	}
+	
 	public final static ArrayList<Friend> friends = new ArrayList<Friend>();
 	
 	public final static class Friend {
@@ -94,51 +140,10 @@ public class MainWindow {
 		public boolean Online;
 		public String Message;
 		
-		public boolean BattleRequest;
-		public int matchNum;
-		
-		public JLabel status;
-		public JTextField display;
-		
 		public ChatWindow window;
 		
 		public Friend(int id, String nickname, boolean online, String message) {
 			ID = id; Nickname = nickname; Online = online; Message = message;
-			
-			display = new JTextField(nickname);
-			display.setEditable(false);
-	    	display.setBackground(Color.white);
-	    	
-	    	display.addMouseListener(new MouseListener() {
-	    		
-	    		@Override
-	    		public void mousePressed(MouseEvent e){}
-	     	  
-	    		@Override
-	    		public void  mouseReleased(MouseEvent e){}
-	    		
-	    		@Override
-	    		public void mouseEntered(MouseEvent e){
-	    			if (MainWindow.selectedFriendID != ID)
-	    				display.setBackground(Color.cyan);
-	    		}
-	     	  
-	    		@Override
-	    		public void mouseExited(MouseEvent e){
-	    			if (MainWindow.selectedFriendID != ID)
-	    				display.setBackground(Color.white);
-	    		}
-
-	    		@Override
-	    		public void mouseClicked(MouseEvent e) {
-	    			MainWindow.selectedFriendID = ID;
-	    			display.setBackground(Color.red);
-	    		}
-	     	
-	    	});
-	    	
-	    	String s = (online? "Online":"Offline") + (message.equals("")? "":", Message");
-	    	status = new JLabel(s);
 		}
 		
 		public void startChat() {
@@ -180,24 +185,15 @@ public class MainWindow {
 		
 		JPanel viewMyFriends = new JPanel(new GridBagLayout());
 		JScrollPane scrollpane = null;
-		JPanel friendList = new JPanel(new GridBagLayout());
+		DefaultListModel<String> list = new DefaultListModel<String>();
+		JList<String> friendList = new JList<String>(list);
 		JButton startChat = new JButton("Start Chat");
 		JButton requestBattle = new JButton("Request Battle");
 		JButton back = new JButton("Back");
 		
 		for (int i = 0; i < friends.size(); i++) {
 			Friend f = friends.get(i);
-			
-			GridBagConstraints constraints = new GridBagConstraints();
-			constraints.fill = GridBagConstraints.HORIZONTAL;
-			constraints.anchor = GridBagConstraints.NORTH;
-			constraints.weightx = 1;
-			constraints.weighty = 1;
-			constraints.gridx = 0;
-			constraints.gridy = i;
-			friendList.add(f.status, constraints);
-			constraints.gridx = 1;
-			friendList.add(f.display, constraints);
+			list.addElement(f.Nickname);
 		}
 		
 		friendList.setPreferredSize(new Dimension(200, 300));
@@ -206,8 +202,8 @@ public class MainWindow {
 		startChat.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (selectedFriendID != -1) {
-					Game.findFriend(selectedFriendID).startChat();
+				if (!friendList.isSelectionEmpty()) {
+					friends.get(friendList.getSelectedIndex()).startChat();
 				}
 				else
 					JOptionPane.showMessageDialog(viewMyFriends, "No Friend Selected");
@@ -217,8 +213,8 @@ public class MainWindow {
 		requestBattle.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (selectedFriendID != -1) {
-					Game.findFriend(selectedFriendID).requestBattle();
+				if (!friendList.isSelectionEmpty()) {
+					friends.get(friendList.getSelectedIndex()).requestBattle();
 				}
 				else
 					JOptionPane.showMessageDialog(viewMyFriends, "No Friend Selected");
@@ -249,7 +245,7 @@ public class MainWindow {
 		constraints.gridy = 2;
 		viewMyFriends.add(back, constraints);
 		
-		if (!Game.inMatch && deckIsReady)
+		/*if (!Game.inMatch && deckIsReady)
 			for (int i = 0; i < friends.size(); i++) {
 				Friend f = friends.get(i);
 				if (f.BattleRequest) {
@@ -260,7 +256,7 @@ public class MainWindow {
 					else
 						NetClient.sendBattleAccept(f.matchNum, false);
 				}
-			}
+			}*/
 		
 		mainwindow.removeAll();
 		mainwindow.add(viewMyFriends);
@@ -317,7 +313,7 @@ public class MainWindow {
 		JButton removeSelected = new JButton("Remove from deck");
 		JLabel cardNum = new JLabel("15/15");
 
-		JButton back2 = new JButton("Back");
+		JButton back = new JButton("Back");
 		
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.fill = GridBagConstraints.BOTH;
@@ -392,7 +388,7 @@ public class MainWindow {
 			}
 		});
 		
-		back2.addActionListener(new ActionListener() {
+		back.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				deckIsReady = (cardN == 15);
@@ -417,7 +413,7 @@ public class MainWindow {
 		constraints.gridy = 1;
 		viewMyCards.add(removeSelected, constraints);
 		constraints.gridy = 2;
-		viewMyCards.add(back2, constraints);
+		viewMyCards.add(back, constraints);
 		
 		mainwindow.removeAll();
 		mainwindow.add(viewMyCards);

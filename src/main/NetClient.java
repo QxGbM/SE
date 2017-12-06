@@ -72,6 +72,12 @@ public final class NetClient {
 		new ACK(response).clientParse();
 	}
 	
+	public static void sendQuickMatch(QuickMatch m) {
+		send(m.toString());
+		String response = get();
+		new ACK(response).clientParse();
+	}
+	
 	public static void send(String s) {
 		byte[] data = new byte[1024];
 		data = s.getBytes();

@@ -1,9 +1,22 @@
 package protocol;
 
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Date;
 
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+
 import main.Game;
+import main.MainWindow;
+import main.NetClient;
 import server.Server;
 import server.Server.User;
 
@@ -53,10 +66,11 @@ public class Message implements Request, Response {
 		message = "Request";
 	}
 	
-	public Message(int from, int to, int matchID) {
+	public Message(int from, int to, int matchID, String nickname) {
 		// Server side Battle Request
 		fromID = from; toID = to;
 		isBattleRequest = true;
+		message = nickname;
 		this.matchID = matchID;
 	}
 	
@@ -89,7 +103,6 @@ public class Message implements Request, Response {
 		if (isBattleRequest) {
 			if (message.equals("Request")) {
 				matchID = Server.createMatch(fromID, toID);
-				System.out.println(matchID + " is created");
 				i.MessageBuffer.add(this);
 			}
 			else if (message.equals("Accept")) {
@@ -103,12 +116,65 @@ public class Message implements Request, Response {
 	}
 	
 	public void clientParse() {
+		MainWindow.Friend friend = Game.findFriend(fromID);
+		if (friend == null) {
+			friend = new MainWindow.Friend(fromID, message, true, "");
+			MainWindow.friends.add(friend);
+		}
 		if (isBattleRequest) {
-			Game.findFriend(fromID).BattleRequest = true;
-			Game.findFriend(fromID).matchNum = matchID;
+			System.out.println(toString());
+			JFrame frame = new JFrame("BattleRequest");
+			JPanel panel = new JPanel(new BorderLayout());
+			
+			frame.addWindowListener(new WindowAdapter() {
+
+				@Override
+				public void windowClosing(WindowEvent arg0) {
+					NetClient.sendBattleAccept(matchID, false);
+					frame.dispose();
+				}
+				
+			});
+			
+			JLabel text = new JLabel(message + " has request a match with you.");
+			JButton accept = new JButton("Accept");
+			JButton reject = new JButton("Reject");
+			
+			accept.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					if (Game.inMatch) {
+						JOptionPane.showMessageDialog(frame, "You are in a Game!");
+						return;
+					}
+					if (!MainWindow.deckIsReady) {
+						JOptionPane.showMessageDialog(frame, "Finish building your deck first!");
+						return;
+					}
+					NetClient.sendBattleAccept(matchID, true);
+					Game.inMatch = true;
+					frame.dispose();
+				}
+			});
+			
+			reject.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					NetClient.sendBattleAccept(matchID, false);
+					frame.dispose();
+				}
+			});
+			
+			panel.add(text, BorderLayout.NORTH);
+			panel.add(accept, BorderLayout.CENTER);
+			panel.add(reject, BorderLayout.SOUTH);
+			
+			frame.add(panel);
+			frame.setSize(300, 300);
+			frame.setVisible(true);
 		}
 		else {
-			Game.findFriend(fromID).appendMessage(message, new Date());
+			friend.appendMessage(message, new Date());
 		}
 	}
 	
