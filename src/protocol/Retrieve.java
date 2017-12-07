@@ -51,14 +51,15 @@ public class Retrieve implements Request {
 	public void serverProcess() {
 		if (arg1.equals("MessageBox")) {
 			User i = Server.findUser(intField1);
-			retrievalResult = new Message.MessageBox(i.MessageBuffer);
+			if (i != null)
+				retrievalResult = new Message.MessageBox(i.MessageBuffer);
 		}
 		if (arg1.equals("ActionBox")) {
 			Match i = Server.findMatch(intField1);
-			if (i.player1 == intField2) {
+			if (i != null && i.player1 == intField2) {
 				retrievalResult = new Action.ActionBox(i.ActionBuffer1);
 			}
-			if (i.player2 == intField2) {
+			if (i != null && i.player2 == intField2) {
 				retrievalResult = new Action.ActionBox(i.ActionBuffer2);
 			}
 		}

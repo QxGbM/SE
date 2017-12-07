@@ -67,13 +67,15 @@ public final class Server {
 		public ArrayList<Action> ActionBuffer1 = new ArrayList<Action>();
 		public ArrayList<Action> ActionBuffer2 = new ArrayList<Action>();
 		
-		public boolean close = false;
+		public boolean flag1 = false;
+		public boolean flag2 = false;
 		
 		public Match(int mid, int p1, int p2) {
 			matchID = mid; player1 = p1; player2 = p2;
 		}
 
 		public void writeStart() {
+			if (!flag1) {flag1 = true; return;}
 			Random r = new Random();
 			Boolean b = r.nextBoolean();
 			ActionBuffer1.add(new Action(matchID, player2, b));
@@ -81,8 +83,9 @@ public final class Server {
 		}
 		
 		public void close() {
-			if(!close) close = true;
-			else matches.remove(this);
+			if(!flag2) {flag2 = true; return;}
+			System.out.println(matchID + " closed");
+			matches.remove(this);
 		}
 	}
 	
@@ -138,7 +141,9 @@ public final class Server {
 			new QuickMatch(s).serverProcess();
 			return new ACK();
 		}
-		else return new ACK("ERR Command Unknown");
+		else {
+			return new ACK("ERR Command Unknown");
+		}
 	}
 	
 	public static void readwrite() throws IOException {

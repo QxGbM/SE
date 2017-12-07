@@ -23,6 +23,9 @@ public final class Game {
 	public static String myNickname = "";
 	
 	public static boolean inMatch = false;
+	
+	public static MessageRetriever messageRetriever;
+	public static ActionRetriever actionRetriever;
 
 	public static void startMatch (int oID, int mID, boolean moveFirst) {
 		display.syncExec(new Runnable () {
@@ -126,7 +129,8 @@ public final class Game {
 			catch (InterruptedException e) {e.printStackTrace();}
 		}
 		new MainWindow(myNickname);
-		new MessageRetriever().start();
+		messageRetriever = new MessageRetriever();
+		messageRetriever.start();
 	}
 
 	public static void main(String[] args) {
@@ -155,16 +159,18 @@ public final class Game {
 		@Override
 		public void run () {
 			while (Loggedin) {
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {e.printStackTrace();}
+
 				Retrieve r = new Retrieve(myID);
-				NetClient.send(r.toString());
-				String response = NetClient.get();
+				String response = NetClient.send(r.toString());
 				Message.MessageBox mb = new Message.MessageBox(response);
 				mb.clientParse();
+				
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {e.printStackTrace();}
 			}
 		}
+		
 	}
 	
 	public final static class ActionRetriever extends Thread {
@@ -176,19 +182,20 @@ public final class Game {
 		
 		@Override
 		public void run () {
-			while (inMatch) {
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {e.printStackTrace();}
+			while (Game.inMatch) {
 				Retrieve r = new Retrieve(matchNum, myID);
-				NetClient.send(r.toString());
-				ActionBox ab = new ActionBox(NetClient.get());
+				String response = NetClient.send(r.toString());
+				ActionBox ab = new ActionBox(response);
 				display.syncExec(new Runnable () {
 					@Override
 					public void run(){
 						ab.clientParse();
 					}
 				});
+				
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {e.printStackTrace();}
 			}
 		}
 	}

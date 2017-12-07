@@ -19,10 +19,12 @@ public class ACK implements Response{
 			acked = true;
 			intField = Integer.valueOf(args[1]);
 		}
-		if (args[0].equals("ERR")) {
+		else if (args[0].equals("ERR")) {
 			type = "ERR";
 			acked = false;
 			errMessage = args[1];
+		}
+		else {
 		}
 	}
 	
@@ -31,8 +33,9 @@ public class ACK implements Response{
 	}
 	
 	public void clientParse() {
-		if (!acked)
+		if (!acked) {
 			JOptionPane.showMessageDialog(null, errMessage);
+		}
 	}
 
 }

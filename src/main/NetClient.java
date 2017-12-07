@@ -2,6 +2,8 @@ package main;
 
 import java.io.*;
 import java.net.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.swing.JOptionPane;
 
@@ -14,89 +16,99 @@ public final class NetClient {
 	public static DatagramPacket sendDp = null;
 	public static DatagramPacket receiveDp = null;
 	
+	public static Lock lock = null;
+	
 	public static void startNetClient() {
 		try {
 			ds = new DatagramSocket();
+			lock = new ReentrantLock();
 		} catch (SocketException e) {e.printStackTrace();}
 	}
 	
 	public static void sendLogin(String username, String password) {
 		Login l = new Login(username, password);
-		send(l.toString());
-		String response = get();
+		String response = send(l.toString());
 		new LoginResult(response).clientParse();
 	}
 	
 	public static void sendMessage(String message, int recipient) {
 		Message m = new Message(Game.myID, recipient, message);
-		send(m.toString());
-		String response = get();
+		String response = send(m.toString());
 		new ACK(response).clientParse();
 	}
 	
 	public static void sendBattleRequest(int recipient) {
 		Message m = new Message(Game.myID, recipient);
-		send(m.toString());
 		new Thread () {
 			@Override
 			public void run() {
 				JOptionPane.showMessageDialog(MainWindow.mainwindow, "Request Sent");
 			}
 		}.start();
-		String response = get();
+		String response = send(m.toString());
 		ACK ack = new ACK(response);
 		ack.clientParse();
 		if(ack.acked) {
-			Game.inMatch = true;
-			Match.matchNum = ack.intField;
-			new ActionRetriever(ack.intField).start();
+			m = new Message(Game.myID, ack.intField, true);
+			response = send(m.toString());
+			ack = new ACK(response);
+			ack.clientParse();
+			if(ack.acked) {
+				Game.inMatch = true;
+				Match.matchNum = ack.intField;
+				Game.actionRetriever = new ActionRetriever(ack.intField);
+				Game.actionRetriever.start();
+			}
 		}
 	}
 	
 	public static void sendBattleAccept(int matchid, boolean accept) {
 		Message m = new Message(Game.myID, matchid, accept);
-		send(m.toString());
-		String response = get();
+		String response = send(m.toString());
 		ACK ack = new ACK(response);
 		ack.clientParse();
 		if(ack.acked) {
 			Game.inMatch = true;
 			Match.matchNum = ack.intField;
-			new ActionRetriever(ack.intField).start();
+			Game.actionRetriever = new ActionRetriever(ack.intField);
+			Game.actionRetriever.start();
 		}
 	}
 	
 	public static void sendAction(Action a) {
-		send(a.toString());
-		String response = get();
+		String response = send(a.toString());
 		new ACK(response).clientParse();
 	}
 	
 	public static void sendQuickMatch(QuickMatch m) {
-		send(m.toString());
-		String response = get();
+		
+		String response = send(m.toString());
 		new ACK(response).clientParse();
 	}
 	
-	public static void send(String s) {
-		byte[] data = new byte[1024];
-		data = s.getBytes();
+	public static String send(String s) {
+		lock.lock();
 		try {
-			InetAddress address = InetAddress.getByName(Game.ServerIP);
-			sendDp = new DatagramPacket(data, data.length, address, Game.Port);
-			ds.send(sendDp);
-		} catch (IOException e) {e.printStackTrace();}
-	}
-	
-	public static String get() {
-		byte[] b = new byte[1024];
-		receiveDp = new DatagramPacket(b,b.length);
-		try {
-			ds.receive(receiveDp);
-		} catch (IOException e) {e.printStackTrace();}
-		byte[] response = receiveDp.getData();
-		int len = receiveDp.getLength();
-		return new String(response, 0, len);
+			byte[] data = new byte[1024];
+			data = s.getBytes();
+			try {
+				InetAddress address = InetAddress.getByName(Game.ServerIP);
+				sendDp = new DatagramPacket(data, data.length, address, Game.Port);
+				ds.send(sendDp);
+			} catch (IOException e) {e.printStackTrace();}
+			
+			byte[] b = new byte[1024];
+			receiveDp = new DatagramPacket(b,b.length);
+			try {
+				ds.receive(receiveDp);
+			} catch (IOException e) {e.printStackTrace();}
+			byte[] response = receiveDp.getData();
+			int len = receiveDp.getLength();
+			s = new String(response, 0, len);
+		} finally {
+			lock.unlock();
+		}
+		return s;
 	}
 	
 	public static void close() {ds.close();}

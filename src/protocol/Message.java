@@ -108,9 +108,6 @@ public class Message implements Request, Response {
 			else if (message.equals("Accept")) {
 				Server.findMatch(matchID).writeStart();
 			}
-			else if (message.equals("Reject")) {
-				Server.findMatch(matchID).close();
-			}
 		}
 		else i.MessageBuffer.add(this);
 	}
@@ -122,7 +119,8 @@ public class Message implements Request, Response {
 			MainWindow.friends.add(friend);
 		}
 		if (isBattleRequest) {
-			System.out.println(toString());
+			MainWindow.matched = true;
+			
 			JFrame frame = new JFrame("BattleRequest");
 			JPanel panel = new JPanel(new BorderLayout());
 			
@@ -131,6 +129,9 @@ public class Message implements Request, Response {
 				@Override
 				public void windowClosing(WindowEvent arg0) {
 					NetClient.sendBattleAccept(matchID, false);
+					NetClient.sendAction(new Action(matchID, Game.myID, "reject"));
+					if (main.Match.shell == null || main.Match.shell.isDisposed())
+						Game.inMatch = false;
 					frame.dispose();
 				}
 				
@@ -161,6 +162,9 @@ public class Message implements Request, Response {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
 					NetClient.sendBattleAccept(matchID, false);
+					NetClient.sendAction(new Action(matchID, Game.myID, "reject"));
+					if (main.Match.shell == null || main.Match.shell.isDisposed())
+						Game.inMatch = false;
 					frame.dispose();
 				}
 			});

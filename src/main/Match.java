@@ -74,23 +74,23 @@ public final class Match {
 	public static Label opponentVPGenlabel;
 	
 	public static void win() {
+		Game.inMatch = false;
 		NetClient.sendAction(new Action(matchNum, Game.myID, "close"));
 		MessageBox dialog = new MessageBox(shell, SWT.OK | SWT.ICON_INFORMATION);
 		dialog.setText("Notification");
 		dialog.setMessage("You Won!");
 		dialog.open();
 		shell.dispose();
-		Game.inMatch = false;
 	}
 	
 	public static void lose() {
+		Game.inMatch = false;
 		NetClient.sendAction(new Action(matchNum, Game.myID, "close"));
 		MessageBox dialog = new MessageBox(shell, SWT.OK | SWT.ICON_INFORMATION);
 		dialog.setText("Notification");
 		dialog.setMessage("You Lost!");
 		dialog.open();
 		shell.dispose();
-		Game.inMatch = false;
 	}
 	
 	public static void reject(String ErrorMessage) {

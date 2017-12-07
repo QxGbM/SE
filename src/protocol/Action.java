@@ -4,6 +4,8 @@ import java.util.ArrayList;
 
 import javax.swing.JOptionPane;
 
+import main.Game;
+import main.NetClient;
 import server.Server;
 import server.Server.Match;
 
@@ -94,6 +96,11 @@ public class Action implements Request, Response {
 		if(actionType.equals("start")) {
 			main.Game.startMatch(playerID, matchID, boolField1);
 		}
+		if(actionType.equals("reject")) {
+			main.Game.inMatch = false;
+			NetClient.sendAction(new Action(matchID, Game.myID, "close"));
+			JOptionPane.showMessageDialog(null, "Opponent Rejected Match.");
+		}
 		else if (actionType.equals("endturn")) {
 			main.Match.opponentEndTurn();
 		}
@@ -108,16 +115,15 @@ public class Action implements Request, Response {
 		}
 		else if (actionType.equals("close")) {
 			main.Game.inMatch = false;
-			JOptionPane.showMessageDialog(null, "Your opponent Left");
 		}
 		
 	}
 
 	public void serverProcess() {
 		Match m = Server.findMatch(matchID);
+		if(actionType.equals("close")) {m.close(); return;}
 		if(m.player2 == playerID) m.ActionBuffer1.add(this);
 		if(m.player1 == playerID) m.ActionBuffer2.add(this);
-		if(actionType.equals("close")) m.close();
 	}
 	
 	public static class ActionBox implements Response {

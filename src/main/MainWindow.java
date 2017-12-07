@@ -21,6 +21,8 @@ public class MainWindow {
 	public static int[] deck = {101,101,102,102,103,103,104,105,201,201,202,202,203,204,205};
 	public static boolean deckIsReady = true;
 	
+	public static boolean matched = false;
+	
 	public void loadMainPanel() {
 		
 		JPanel mainPanel = new JPanel (new GridBagLayout());
@@ -33,7 +35,6 @@ public class MainWindow {
 		quickmatch.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				NetClient.sendQuickMatch(new QuickMatch(Game.myID, true));
 				loadQuickMatchPanel();
 			}
 		});
@@ -87,6 +88,21 @@ public class MainWindow {
 	}
 	
 	public void loadQuickMatchPanel() {
+		
+		matched = false;
+		
+		if (Game.inMatch) {
+			JOptionPane.showMessageDialog(mainwindow, "Cannot enter the quick match queue while in a match!");
+			return;
+		}
+		
+		if (!deckIsReady) {
+			JOptionPane.showMessageDialog(mainwindow, "Your deck isn\'t ready");
+			return;
+		}
+		
+		NetClient.sendQuickMatch(new QuickMatch(Game.myID, true));
+		
 		JPanel panel = new JPanel(new GridBagLayout());
 		JLabel time = new JLabel("0:0");
 		JButton back = new JButton("Back");
@@ -103,9 +119,9 @@ public class MainWindow {
 			@Override
 			public void run() {
 				int seconds = 0, minutes = 0;
-				while (!Game.inMatch) {
+				while (!matched) {
 					try {
-						sleep(1000);
+						Thread.sleep(1000);
 					} catch (InterruptedException e) {e.printStackTrace();}
 					seconds++;
 					if (seconds == 60) {seconds = 0; minutes++;}
@@ -129,6 +145,7 @@ public class MainWindow {
 		mainwindow.removeAll();
 		mainwindow.add(panel);
 		mainwindow.pack();
+		
 	}
 	
 	public final static ArrayList<Friend> friends = new ArrayList<Friend>();
@@ -205,19 +222,24 @@ public class MainWindow {
 				if (!friendList.isSelectionEmpty()) {
 					friends.get(friendList.getSelectedIndex()).startChat();
 				}
-				else
-					JOptionPane.showMessageDialog(viewMyFriends, "No Friend Selected");
+				else {
+					JOptionPane.showMessageDialog(viewMyFriends, "No Friend Selected.");
+				}
 			}
 		});
 		
 		requestBattle.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (!friendList.isSelectionEmpty()) {
+				if (friendList.isSelectionEmpty()) {
+					JOptionPane.showMessageDialog(viewMyFriends, "No Friend Selected.");
+				}
+				else if (Game.inMatch) {
+					JOptionPane.showMessageDialog(viewMyFriends, "Cannot request battle while in match.");
+				}
+				else {
 					friends.get(friendList.getSelectedIndex()).requestBattle();
 				}
-				else
-					JOptionPane.showMessageDialog(viewMyFriends, "No Friend Selected");
 			}
 		});
 		
@@ -244,19 +266,6 @@ public class MainWindow {
 		viewMyFriends.add(requestBattle, constraints);
 		constraints.gridy = 2;
 		viewMyFriends.add(back, constraints);
-		
-		/*if (!Game.inMatch && deckIsReady)
-			for (int i = 0; i < friends.size(); i++) {
-				Friend f = friends.get(i);
-				if (f.BattleRequest) {
-					f.BattleRequest = false;
-					int confirm = JOptionPane.showConfirmDialog(mainwindow, "Battle With " + f.Nickname + "?");
-					if (confirm == 0)
-						NetClient.sendBattleAccept(f.matchNum, true);
-					else
-						NetClient.sendBattleAccept(f.matchNum, false);
-				}
-			}*/
 		
 		mainwindow.removeAll();
 		mainwindow.add(viewMyFriends);
@@ -305,6 +314,11 @@ public class MainWindow {
 	}
 	
 	public void loadCardPanel() {
+		
+		if (Game.inMatch) {
+			JOptionPane.showMessageDialog(mainwindow, "Cannot edit deck while in a match!");
+			return;
+		}
 		
 		JPanel viewMyCards = new JPanel(new GridBagLayout());
 		JScrollPane scrollpane2 = null;

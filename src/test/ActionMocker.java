@@ -16,7 +16,7 @@ import main.NetClient;
 
 public class ActionMocker {
 	
-	public final static int MatchNum = 1000;
+	public final static int MatchNum = 1001;
 	public final static int playerID = 101;
 
 	public static void main(String[] args) {
@@ -60,8 +60,7 @@ public class ActionMocker {
 				else
 					s = "Action " + MatchNum + " " + playerID + " " + combobox.getSelectedItem() + " " + textarea.getText();
 				textarea.setText("");
-				NetClient.send(s);
-				label.setText(NetClient.get());
+				label.setText(NetClient.send(s));
 			}
 		});
 		
