@@ -92,8 +92,7 @@ public final class NetClient {
 			byte[] data = new byte[1024];
 			data = s.getBytes();
 			try {
-				InetAddress address = InetAddress.getByName(Game.ServerIP);
-				sendDp = new DatagramPacket(data, data.length, address, Game.Port);
+				sendDp = new DatagramPacket(data, data.length, Game.ServerIP, Game.Port);
 				ds.send(sendDp);
 			} catch (IOException e) {e.printStackTrace();}
 			

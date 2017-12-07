@@ -3,6 +3,8 @@ package main;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import javax.swing.*;
 
@@ -15,13 +17,12 @@ public final class Game {
 	
 	public static Display display = new Display();
 	
-	public static final String ServerIP = "localhost";
-	public static final int Port = 10010;
+	public static InetAddress ServerIP;
+	public static int Port;
 	
 	public static boolean Loggedin = false;
 	public static int myID = -1;
 	public static String myNickname = "";
-	
 	public static boolean inMatch = false;
 	
 	public static MessageRetriever messageRetriever;
@@ -51,6 +52,10 @@ public final class Game {
 		JTextField usernameField = new JTextField();
 		JPasswordField passwordField = new JPasswordField();
 		JButton login = new JButton("Login");
+		JLabel serverLabel = new JLabel("Server Address:");
+		JLabel portLabel = new JLabel("Port Number:");
+		JTextField serverAddress = new JTextField("localhost");
+		JTextField portNumber = new JTextField("10010");
 		
 		panel.setBackground(new Color(0, 100, 255));
 
@@ -59,6 +64,20 @@ public final class Game {
 			public void actionPerformed(ActionEvent e) {  
 				if(usernameField.getText().length() == 0 || passwordField.getPassword().length == 0) {
 					JOptionPane.showMessageDialog(frame, "Incomplete Fields");
+					usernameField.setText("");
+					passwordField.setText("");
+					return;
+				}
+				try {
+					ServerIP = InetAddress.getByName(serverAddress.getText());
+					Port = Integer.valueOf(portNumber.getText());
+				} catch (UnknownHostException e1) {
+					JOptionPane.showMessageDialog(frame, "Check the server address or your internet connection.");
+					usernameField.setText("");
+					passwordField.setText("");
+					return;
+				} catch (NumberFormatException e2) {
+					JOptionPane.showMessageDialog(frame, "Invalid port number input");
 					usernameField.setText("");
 					passwordField.setText("");
 					return;
@@ -87,6 +106,10 @@ public final class Game {
 		usernameLabel.setBackground(new Color(0, 100, 255));
 		passwordLabel.setBorder(BorderFactory.createEmptyBorder());
 		passwordLabel.setBackground(new Color(0, 100, 255));
+		serverLabel.setBorder(BorderFactory.createEmptyBorder());
+		serverLabel.setBackground(new Color(0, 100, 255));
+		portLabel.setBorder(BorderFactory.createEmptyBorder());
+		portLabel.setBackground(new Color(0, 100, 255));
     
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.fill = GridBagConstraints.HORIZONTAL;
@@ -110,11 +133,31 @@ public final class Game {
 		constraints.gridheight = 1;
 		constraints.gridwidth = 3;
 		panel.add(passwordField, constraints);
+		
+		constraints.gridy = 6;
+		constraints.gridheight = 2;
+		constraints.gridwidth = 1;
+		panel.add(serverLabel, constraints);
+    
+		constraints.gridy = 8;
+		constraints.gridheight = 1;
+		constraints.gridwidth = 3;
+		panel.add(serverAddress, constraints);
+		
+		constraints.gridy = 9;
+		constraints.gridheight = 2;
+		constraints.gridwidth = 1;
+		panel.add(portLabel, constraints);
+    
+		constraints.gridy = 11;
+		constraints.gridheight = 1;
+		constraints.gridwidth = 3;
+		panel.add(portNumber, constraints);
     
 		constraints = new GridBagConstraints();
 		constraints.anchor = GridBagConstraints.LINE_END;
 		constraints.gridx = 2;
-		constraints.gridy = 6;
+		constraints.gridy = 12;
 		constraints.gridwidth = 1;
 		panel.add(login, constraints);
     
@@ -135,14 +178,7 @@ public final class Game {
 
 	public static void main(String[] args) {
 		
-		new Thread() {
-			@Override
-			public void run() {
-				try {
-					server.Server.main("-test".split(" "));
-				} catch (IOException e) {e.printStackTrace();}
-			}
-		}.start();
+		if (args.length > 0 && args[0].equals("-test")) runServer();
 
 		NetClient.startNetClient();
 		
@@ -153,6 +189,17 @@ public final class Game {
 		
 		display.close();
 		NetClient.close();
+	}
+	
+	public static void runServer() {
+		new Thread() {
+			@Override
+			public void run() {
+				try {
+					server.Server.main("-test".split(" "));
+				} catch (IOException e) {e.printStackTrace();}
+			}
+		}.start();
 	}
 	
 	public final static class MessageRetriever extends Thread {
