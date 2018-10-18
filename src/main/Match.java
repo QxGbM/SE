@@ -1,5 +1,6 @@
 package main;
 
+import java.awt.Font;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -80,6 +81,7 @@ public final class Match {
 		dialog.setText("Notification");
 		dialog.setMessage("You Won!");
 		dialog.open();
+		Game.win(Game.myID, false);
 		shell.dispose();
 	}
 	
@@ -90,6 +92,7 @@ public final class Match {
 		dialog.setText("Notification");
 		dialog.setMessage("You Lost!");
 		dialog.open();
+		Game.lose(Game.myID, false);
 		shell.dispose();
 	}
 	
@@ -442,6 +445,8 @@ public final class Match {
 		javax.swing.JScrollPane panel = new javax.swing.JScrollPane(logDisplay);
 		TextFrame.add(panel);
 		bl.pack();
+		java.awt.Font font = new java.awt.Font("Times New Roman", Font.PLAIN, bl.getSize().y);
+		logDisplay.setFont(font);
 		return bl;
 	}
 	

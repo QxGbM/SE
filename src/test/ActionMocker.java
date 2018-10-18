@@ -13,24 +13,30 @@ import javax.swing.JTextArea;
 import javax.swing.border.EmptyBorder;
 
 import main.NetClient;
+import protocol.Message;
 
 public class ActionMocker {
 	
 	public final static int MatchNum = 1001;
+	public final static int CoopNum = 2001;
 	public final static int playerID = 101;
+	
+	public static boolean mode = true;
 
 	public static void main(String[] args) {
 		if (NetClient.ds == null) NetClient.startNetClient();
 		JFrame frame = new JFrame("Action Mocker");
 		JComboBox<String> combobox = new JComboBox<String>();
+		combobox.addItem("quickmatch enter");
+		combobox.addItem("quickmatch accept");
 		combobox.addItem("endturn");
 		combobox.addItem("summon");
 		combobox.addItem("skill");
 		combobox.addItem("surrender");
-		combobox.addItem("custom");
 		
 		JTextArea textarea = new JTextArea();
 		JButton send = new JButton("send");
+		JButton toggle = new JButton("Toggle: Quickmatch");
 		JLabel label = new JLabel();
 		JPanel panel = new JPanel(new GridBagLayout());
 		panel.setBorder(new EmptyBorder(5,5,5,5));
@@ -38,29 +44,100 @@ public class ActionMocker {
 		combobox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				if(combobox.getSelectedItem().equals("endturn"))
-					textarea.setText("");
-				if(combobox.getSelectedItem().equals("summon"))
-					textarea.setText("<MonsterID> <Location>");
-				if(combobox.getSelectedItem().equals("skill"))
-					textarea.setText("<Location> <Requires Target?> <(Optional) Target>");
-				if(combobox.getSelectedItem().equals("surrender"))
-					textarea.setText("");
-				else
-					textarea.setText("");
+				if (combobox.getSelectedItem() == null) return;
+				if (mode) {
+					if(combobox.getSelectedItem().equals("quickmatch enter"))
+						textarea.setText("");
+					else if(combobox.getSelectedItem().equals("quickmatch accept"))
+						textarea.setText("");
+					else if(combobox.getSelectedItem().equals("endturn"))
+						textarea.setText("");
+					else if(combobox.getSelectedItem().equals("summon"))
+						textarea.setText("<MonsterID> <Location>");
+					else if(combobox.getSelectedItem().equals("skill"))
+						textarea.setText("<Location> <Requires Target?> <(Optional) Target>");
+					else if(combobox.getSelectedItem().equals("surrender"))
+						textarea.setText("");
+				}
+				else {
+					if(combobox.getSelectedItem().equals("coop enter"))
+						textarea.setText("");
+					else if(combobox.getSelectedItem().equals("coop accept"))
+						textarea.setText("");
+					else if(combobox.getSelectedItem().equals("summon"))
+						textarea.setText("<int:id> <int:slot>");
+					else if(combobox.getSelectedItem().equals("skill"))
+						textarea.setText("<int:slot> <bool:requiresTarget> (<int:target>)");
+					else if(combobox.getSelectedItem().equals("endturn"))
+						textarea.setText("");
+					else if(combobox.getSelectedItem().equals("ball"))
+						textarea.setText("");
+					else if(combobox.getSelectedItem().equals("surrender"))
+						textarea.setText("");
+				}
+				
 			}
 		});
 		
 		send.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				String s;
-				if (combobox.getSelectedItem().equals("custom"))
-					s = textarea.getText();
-				else
-					s = "Action " + MatchNum + " " + playerID + " " + combobox.getSelectedItem() + " " + textarea.getText();
+				String S = (String) combobox.getSelectedItem(), s = "";
+				if (mode) {
+					switch (S) {
+					case "quickmatch enter":
+						s = new protocol.QuickMatch(playerID, true, true).toString();
+						break;
+					case "quickmatch accept":
+						s = new Message(playerID, MatchNum, true).toString();
+						break;
+					default:
+						s = "Action " + MatchNum + " " + playerID + " " + combobox.getSelectedItem() + " " + textarea.getText();
+					}
+				}
+				else {
+					switch (S) {
+					case "coop enter":
+						s = new protocol.QuickMatch(playerID, false, true).toString();
+						break;
+					case "coop accept":
+						s = new Message(playerID, CoopNum, true).toString();
+						break;
+					default:
+						s = "CoopAction " + CoopNum + " " + playerID + " " + combobox.getSelectedItem() + " " + textarea.getText();
+					}
+				}
 				textarea.setText("");
 				label.setText(NetClient.send(s));
+			}
+		});
+		
+		toggle.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if (mode) {
+					toggle.setText("Toggle: Coop");
+					mode = false;
+					combobox.removeAllItems();
+					combobox.addItem("coop enter");
+					combobox.addItem("coop accept");
+					combobox.addItem("summon");
+					combobox.addItem("skill");
+					combobox.addItem("endturn");
+					combobox.addItem("ball");
+					combobox.addItem("surrender");
+				}
+				else {
+					toggle.setText("Toggle: Quickmatch");
+					mode = true;
+					combobox.removeAllItems();
+					combobox.addItem("quickmatch enter");
+					combobox.addItem("quickmatch accept");
+					combobox.addItem("endturn");
+					combobox.addItem("summon");
+					combobox.addItem("skill");
+					combobox.addItem("surrender");
+				}
 			}
 		});
 		
@@ -79,6 +156,8 @@ public class ActionMocker {
 		panel.add(label, constraints);
 		constraints.gridy = 4;
 		panel.add(send, constraints);
+		constraints.gridy = 5;
+		panel.add(toggle, constraints);
 		frame.add(panel);
 		frame.setSize(500, 500);
 		frame.setVisible(true);

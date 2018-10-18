@@ -12,6 +12,8 @@ import org.eclipse.swt.widgets.Display;
 
 import protocol.*;
 import protocol.Action.ActionBox;
+import protocol.CoopAction.CoopActionBox;
+import server.DatabaseAccessor;
 
 public final class Game {
 	
@@ -36,8 +38,16 @@ public final class Game {
 		});
 	}
 	
+	public static void startVersusAI () {
+		display.syncExec(new Runnable () {
+			public void run(){
+				AI.AI.startAIMatch(MainWindow.deck);
+			}
+		});
+	}
+	
 	public static MainWindow.Friend findFriend (int id) {
-		for (int i = 0; i < MainWindow.friends.size(); i++){
+		for (int i = 0; i < MainWindow.friends.size(); i++) {
 			if (MainWindow.friends.get(i).ID == id) return MainWindow.friends.get(i);
 		}
 		return null;
@@ -54,14 +64,14 @@ public final class Game {
 		JButton login = new JButton("Login");
 		JLabel serverLabel = new JLabel("Server Address:");
 		JLabel portLabel = new JLabel("Port Number:");
-		JTextField serverAddress = new JTextField("localhost");
+		JTextField serverAddress = new JTextField("159.65.180.211");
 		JTextField portNumber = new JTextField("10010");
 		
 		panel.setBackground(new Color(0, 100, 255));
 
 		login.addActionListener(new ActionListener () {
 			@Override
-			public void actionPerformed(ActionEvent e) {  
+			public void actionPerformed(ActionEvent e) {
 				if(usernameField.getText().length() == 0 || passwordField.getPassword().length == 0) {
 					JOptionPane.showMessageDialog(frame, "Incomplete Fields");
 					usernameField.setText("");
@@ -174,21 +184,28 @@ public final class Game {
 		new MainWindow(myNickname);
 		messageRetriever = new MessageRetriever();
 		messageRetriever.start();
+		
 	}
-
 	public static void main(String[] args) {
 		
-		if (args.length > 0 && args[0].equals("-test")) runServer();
-
-		NetClient.startNetClient();
+		if (args.length > 0 && args[0].equals("-test")) {
+			NetClient.startNetClient();
+			runServer();
+			openLoginWindow();
+			while (Loggedin)
+				if (!display.readAndDispatch()) display.sleep();
+			display.close();
+			NetClient.close();
+		}
+		else {
+			NetClient.startNetClient();
+			openLoginWindow();
+			while (Loggedin)
+				if (!display.readAndDispatch()) display.sleep();
+			display.close();
+			NetClient.close();
+		}
 		
-		openLoginWindow();
-		
-		while (Loggedin)
-			if (!display.readAndDispatch()) display.sleep();
-		
-		display.close();
-		NetClient.close();
 	}
 	
 	public static void runServer() {
@@ -232,19 +249,117 @@ public final class Game {
 			while (Game.inMatch) {
 				Retrieve r = new Retrieve(matchNum, myID);
 				String response = NetClient.send(r.toString());
-				ActionBox ab = new ActionBox(response);
-				display.syncExec(new Runnable () {
-					@Override
-					public void run(){
-						ab.clientParse();
-					}
-				});
-				
+				if (matchNum >= 1000 && matchNum < 2000) {
+					ActionBox ab = new ActionBox(response);
+					display.syncExec(new Runnable () {
+						@Override
+						public void run(){
+							ab.clientParse();
+						}
+					});
+				}
+				if (matchNum >= 2000 && matchNum < 3000) {
+					CoopActionBox cab = new CoopActionBox(response);
+					display.syncExec(new Runnable () {
+						@Override
+						public void run(){
+							cab.clientParse();
+						}
+					});
+				}
 				try {
 					Thread.sleep(500);
 				} catch (InterruptedException e) {e.printStackTrace();}
 			}
 		}
+	}
+	//new content below!
+	public static void win(int id, boolean isTesting) {
+		if(isTesting)
+			return;
+		DatabaseAccessor x = new DatabaseAccessor();
+		x.win(new Integer(id).toString());
+		
+	}
+	
+	public static void lose(int id, boolean isTesting) {
+		if(isTesting)
+			return;
+		DatabaseAccessor x = new DatabaseAccessor();
+		x.loss(new Integer(id).toString());
+	}
+	
+	public static void updateCurrency(String id, String gold, String dust,boolean isTesting) {
+		if(isTesting)
+			return;
+		DatabaseAccessor x = new DatabaseAccessor();
+		x.updateCurrency(id,gold,dust);
+	}
+	
+	public static void addCard(String id, String c_id, boolean isTesting) {
+		if(isTesting)
+			return;
+		DatabaseAccessor x = new DatabaseAccessor();
+		x.addCard(id, c_id);
+	}
+	
+	public static String findUser(String id, boolean isTesting) {
+		if(isTesting)
+			return null;
+		DatabaseAccessor x = new DatabaseAccessor();
+		return x.findUser(id);
+	}
+	
+	public static String findFriends(String id,boolean isTesting ) {
+		if(isTesting)
+			return null;
+		DatabaseAccessor x = new DatabaseAccessor();
+		return x.findFriends(id);
+	}
+	
+	public static void specialPractice(String id, String c_id, boolean isTesting) {
+		if(isTesting)
+			return;
+		DatabaseAccessor x = new DatabaseAccessor();
+		x.specialPractice(id, c_id);
+	}
+	
+	public static String getAllCardInfo(String id, boolean isTesting) {
+		if(isTesting){
+			return null;
+		}		
+		return new DatabaseAccessor().getAllCardInfo(id);
+	}
+	
+	public static String[] getCardInfo(String id, String c_id, boolean isTesting) {
+		if(isTesting)
+			return null;
+		
+		return new DatabaseAccessor().getCardInfo(id, c_id);
+	}
+	
+	public static void addFriend(String id, boolean isTesting) {
+		if(isTesting)
+			return;
+		DatabaseAccessor x= new DatabaseAccessor();
+		try {
+		x.addFriend(new Integer(Game.myID).toString(),id);
+		}
+		catch (NumberFormatException e) {
+			return;
+		}
+	}
+	
+	public static void removeFriend(String id, boolean isTesting) {
+		if(isTesting)
+		return;
+	DatabaseAccessor x= new DatabaseAccessor();
+	try {
+	x.removeFriend(new Integer(Game.myID).toString(),id);
+	}
+	catch(NumberFormatException e) {
+		return;
+	}
 	}
 }
 

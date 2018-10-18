@@ -59,11 +59,12 @@ public class Message implements Request, Response {
 		}
 	}
 	
-	public Message(int from, int to) {
+	public Message(int from, int to, int mode) {
 		// Client side Initial Battle Request
 		fromID = from; toID = to;
 		isBattleRequest = true;
-		message = "Request";
+		if (mode == 1) message = "Quickmatch";
+		else if (mode == 2) message = "Coop";
 	}
 	
 	public Message(int from, int to, int matchID, String nickname) {
@@ -101,12 +102,19 @@ public class Message implements Request, Response {
 	public void serverProcess() {
 		User i = Server.findUser(toID);
 		if (isBattleRequest) {
-			if (message.equals("Request")) {
+			if (message.equals("Quickmatch")) {
 				matchID = Server.createMatch(fromID, toID);
 				i.MessageBuffer.add(this);
 			}
+			else if (message.equals("Coop")) {
+				matchID = Server.createCoop(fromID, toID);
+				i.MessageBuffer.add(this);
+			}
 			else if (message.equals("Accept")) {
-				Server.findMatch(matchID).writeStart();
+				if (matchID >= 1000 && matchID < 2000)
+					Server.findMatch(matchID).writeStart();
+				if (matchID >= 2000 && matchID < 3000)
+					Server.findCoopMatch(matchID).writeStart();
 			}
 		}
 		else i.MessageBuffer.add(this);
@@ -125,11 +133,13 @@ public class Message implements Request, Response {
 			JPanel panel = new JPanel(new BorderLayout());
 			
 			frame.addWindowListener(new WindowAdapter() {
-
 				@Override
 				public void windowClosing(WindowEvent arg0) {
 					NetClient.sendBattleAccept(matchID, false);
-					NetClient.sendAction(new Action(matchID, Game.myID, "reject"));
+					if (matchID >= 1000 && matchID < 2000)
+						NetClient.sendAction(new Action(matchID, Game.myID, "reject"));
+					if (matchID >= 2000 && matchID < 3000)
+						NetClient.sendCoopAction(new CoopAction(matchID, Game.myID, "reject"));
 					if (main.Match.shell == null || main.Match.shell.isDisposed())
 						Game.inMatch = false;
 					frame.dispose();
@@ -162,7 +172,10 @@ public class Message implements Request, Response {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
 					NetClient.sendBattleAccept(matchID, false);
-					NetClient.sendAction(new Action(matchID, Game.myID, "reject"));
+					if (matchID >= 1000 && matchID < 2000)
+						NetClient.sendAction(new Action(matchID, Game.myID, "reject"));
+					if (matchID >= 2000 && matchID < 3000)
+						NetClient.sendCoopAction(new CoopAction(matchID, Game.myID, "reject"));
 					if (main.Match.shell == null || main.Match.shell.isDisposed())
 						Game.inMatch = false;
 					frame.dispose();

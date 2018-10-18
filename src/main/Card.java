@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 
-public final class Card{
+public class Card{
   
 	private java.awt.Image image;
 	
@@ -51,13 +51,23 @@ public final class Card{
 	public Label labelHP;
 	public javax.swing.JLabel Imglabel;
 	
+	private int frameHeight;
+	private int frameWidth;
+	
 	public Card() {
 		setEmpty();
 	}
 
-	public Card(java.awt.Image img, String[] cardInfo){
+	public Card(String[] cardInfo) {
 		loadCardInfo(cardInfo);
-		image = img; 
+		File imgFile = new File("cards/" + cardInfo[0] + ".jpg");
+		java.awt.Image img;
+		try {
+			img = javax.imageio.ImageIO.read(imgFile);
+			image = img;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void loadCardInfo(String[] cardInfo) {
@@ -89,7 +99,7 @@ public final class Card{
 	}
 	
 	public Card clone() {
-		return new Card(image, genCardInfo());
+		return new Card(genCardInfo());
 	}
 	
 	public void setEmpty() {
@@ -113,9 +123,20 @@ public final class Card{
 			labelMP.setText("");
 			labelHP.setText("");
 			javax.swing.ImageIcon icon = new javax.swing.ImageIcon();
-			icon.setImage(image.getScaledInstance(100, 100, Image.SCALE_FAST));
+			icon.setImage(image.getScaledInstance(frameHeight, frameWidth, Image.SCALE_FAST));
 			Imglabel.setIcon(icon);
 		}
+		
+		spGen = 0;
+		spCost = 0;
+		vpGen = 0;
+		
+		hold = false;
+		turns = 0;
+		backupName = "";
+		skillUsed = false;
+		shielded = false;
+		shieldedTurns = 0;
 	}
 	
 	public boolean isEmpty() {
@@ -511,13 +532,10 @@ public final class Card{
 			BufferedReader reader = new BufferedReader(new FileReader(cardFile));
 			while (reader.ready()) {
 				String[] cardInfo = new String[10];
-				cardInfo[0] = reader.readLine();
-				File imgFile = new File("cards/" + cardInfo[0] + ".jpg");
-				java.awt.Image img = javax.imageio.ImageIO.read(imgFile);
-				for (int i = 1; i < 10 && reader.ready(); i++) {
+				for (int i = 0; i < 10 && reader.ready(); i++) {
 					cardInfo[i] = reader.readLine();
 				}
-				cardList.add(new Card(img, cardInfo));
+				cardList.add(new Card(cardInfo));
 			}
 			reader.close();
 		} catch (IOException e) {e.printStackTrace();}
@@ -537,10 +555,9 @@ public final class Card{
 		
 		Imglabel = new javax.swing.JLabel();
 		
-		updateDisplay();
+		
 		
 		frame.add(Imglabel);
-		frame.setSize(100, 100);
 		
 		GridLayout layout = new GridLayout(1, false);
 		layout.marginWidth = layout.marginHeight = 5;
@@ -579,6 +596,12 @@ public final class Card{
 		labelMP.setLayoutData(data);
 		
 		comp.pack();
+		
+		frameHeight = frame.getHeight();
+		frameWidth = frame.getHeight();
+		
+		updateDisplay();
+		
 		return comp;
 	}
 	
@@ -587,7 +610,7 @@ public final class Card{
 		if (hpMax != 0) labelHP.setText("HP:" + hp);
 		actionButton.setText(cardName);
 		javax.swing.ImageIcon icon = new javax.swing.ImageIcon();
-		icon.setImage(image.getScaledInstance(100, 100, Image.SCALE_FAST));
+		icon.setImage(image.getScaledInstance(frameHeight, frameWidth, Image.SCALE_FAST));
 		Imglabel.setIcon(icon);
 	}
 }
