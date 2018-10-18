@@ -32,11 +32,6 @@ public class testMessageRetrieve {
 		assertTrue(mb.toString().equals("MessageBox 2 Message 100 101 1 hi Message 100 101 3 how are you?"));
 	}
 	
-	@Test
-	public final void test3_0() {
-		Message m = new Message(100, 101);
-		assertTrue(m.isBattleRequest);
-	}
 	
 	@Test
 	public final void test4_0() {
@@ -45,11 +40,5 @@ public class testMessageRetrieve {
 		assertTrue(m2.message.equals("hi"));
 	}
 	
-	@Test
-	public final void test5_0() {
-		Message m1 = new Message(100, 101);
-		Message m2 = new Message(m1.toString());
-		assertTrue(m2.isBattleRequest);
-	}
 	
 }

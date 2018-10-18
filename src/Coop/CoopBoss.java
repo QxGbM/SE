@@ -123,25 +123,25 @@ public class CoopBoss {
 	public void Action() {
 		ArrayList<String> s = new ArrayList<String>();
 		if (mp >= 30 && hp >= 30) {
-			// ÌáÉýÆø³¡£¬ÕÙ»½½ø¹¥ÐÔ¹ÖÎï£¬½ø¹¥¹ÖÓÃbossÀ¶¹¥»÷
+			// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ù»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¹ï¿½ï¿½ï£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½bossï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			s.add("aura");
 			if (minionNotFull()) s.add("minion 1");
 		}
 		else if (mp >= 30 && hp < 30) {
-			// ÌáÉýÆø³¡£¬ÕÙ»½·ÀÓùÐÔ¹ÖÎï£¬·ÀÊØ¹Ö²»¹¥»÷£¬ÔÚbossÑª²»µ½40Ê±¸øboss»Ø£¬bossÑªÔÚ10ÒÔÏÂÎþÉü×Ô¼º¡£
+			// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ù»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¹ï¿½ï¿½ï£¬ï¿½ï¿½ï¿½Ø¹Ö²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½bossÑªï¿½ï¿½ï¿½ï¿½40Ê±ï¿½ï¿½bossï¿½Ø£ï¿½bossÑªï¿½ï¿½10ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¼ï¿½ï¿½ï¿½
 			s.add("aura");
 			if (minionNotFull()) s.add("minion 2");
 		}
 		else if (mp < 30 && hp >= 30) {
-			// Ç××Ô¶Ô¸ß³ðºÞ½øÐÐÆÕÍ¨¹¥»÷£¬ÓÅÏÈ½¨Öþ
+			// ï¿½ï¿½ï¿½Ô¶Ô¸ß³ï¿½Þ½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È½ï¿½ï¿½ï¿½
 			s.add("attack " + getPriorityTarget(false));
 		}
 		else if (mp < 30 && hp < 30 && !ultimateUsed && auraLevel > 1) {
-			// ÊÍ·ÅÖÕ½á¼¼
+			// ï¿½Í·ï¿½ï¿½Õ½á¼¼
 			s.add("ult");
 		}
 		else {
-			// Ç××Ô¶Ô¸ß³ðºÞ½øÐÐÆÕÍ¨¹¥»÷£¬ÓÅÏÈ¹ÖÎï
+			// ï¿½ï¿½ï¿½Ô¶Ô¸ß³ï¿½Þ½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¹ï¿½ï¿½ï¿½
 			s.add("attack " + getPriorityTarget(false));
 		}
 		s.add("regen " + selfRegen);
@@ -201,7 +201,7 @@ public class CoopBoss {
 				Coop.minions[1].setMinion(Integer.valueOf(s[1]));
 				mpDeduct(20);
 			}
-			Coop.text.setText("Boss: ¬F¤ì¤è¡¢ÎÒ¤¬ÖÒÕ\¤ÊƒW¤¿¤Á¡£");
+			Coop.text.setText("Boss: ...");
 			break;
 		case "regen":
 			selfRegen();
@@ -215,7 +215,7 @@ public class CoopBoss {
 			if (location.equals("Friend")) {
 				Coop.friendBoard[x][y].hpDeduct(5);
 			}
-			Coop.text.setText("Boss: †Ð¤é¤¨£¡");
+			Coop.text.setText("Boss: ...");
 			break;
 		case "ult":
 			ultimate();
@@ -236,7 +236,7 @@ public class CoopBoss {
 		}
 		else {
 			if (Coop.text.getText().equals("Boss: You dare challenge me?!"))
-			Coop.text.setText("Boss: ¤ªÇ°¤Ï¤â¤¦ËÀ¤ó¤Ç¤¤¤ë¡£");	
+			Coop.text.setText("Boss: ...");	
 			else
 			Coop.text.setText("Boss: You dare challenge me?!");
 		}
